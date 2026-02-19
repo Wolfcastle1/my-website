@@ -1,0 +1,103 @@
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: #1a2740;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid #253756;
+  z-index: 100;
+}
+
+.menu-button {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.menu-button:hover {
+  background-color: #253756;
+}
+
+.menu-icon {
+  font-size: 24px;
+  color: #8fadc8;
+}
+
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coin-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coin-add-button {
+  background: transparent;
+  border: 1px solid #253756;
+  color: #8fadc8;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.coin-add-button:hover {
+  background-color: #253756;
+  border-color: #4a6fa5;
+}
+
+.coin-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1.5px solid #1a2740;
+  background-color: #141f33;
+  border-radius: 20px;
+  padding: 4px 12px;
+}
+
+.coin-count {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c9d6e3;
+}
+
+.login-button {
+  background-color: #3d5a80;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.login-button:hover {
+  background-color: #4a6d94;
+}
+
+/* Clerk UserButton styling */
+.user-avatar-clerk {
+  width: 40px !important;
+  height: 40px !important;
+}
