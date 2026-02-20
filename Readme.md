@@ -20,7 +20,15 @@ Optionally you can use the below flag in addition to the above to initialize a v
 
 `  -v pgdata:/path \ `
 
-#### Actions
+--- 
+
+### Actions
+
+To Connect from Terminal
+
+`docker exec -it postgres psql -U Sam -d mydb`
+- no password is needed when connecting locally
+
 
 on DB Container:
 ```
@@ -35,3 +43,4 @@ docker volume ls              # list all volumes
 docker volume inspect pgdata  # see details about a volume
 docker volume rm pgdata       # delete it (container must not be using it)
 ```
+---
