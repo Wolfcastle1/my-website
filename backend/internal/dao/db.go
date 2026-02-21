@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"backend/internal/models"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -38,6 +39,18 @@ func IncrementUserTokens(email string) int {
 		log.Fatalf("Failed to increment tokens for %s: %v\n", email, err)
 	}
 	return tokens
+}
+
+func GetUserData(email string) models.User {
+	var user models.User
+	err := pool.QueryRow(context.Background(),
+		"SELECT email, tokens FROM users WHERE email = $1",
+		email,
+	).Scan(&user.Email, &user.Tokens)
+	if err != nil {
+		log.Fatalf("Failed to get user %s: %v\n", email, err)
+	}
+	return user
 }
 
 

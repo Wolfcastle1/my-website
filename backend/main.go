@@ -30,6 +30,12 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]string{})
 	})
 
+	r.Get("/{email}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		user := dao.GetUserData(chi.URLParam(r, "email"))
+		json.NewEncoder(w).Encode(user)
+	})
+
 	log.Println("Server starting on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
