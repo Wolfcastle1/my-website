@@ -8,6 +8,8 @@ import (
 
 type Config struct {
 	DatabaseUrl string 
+	CLerkPublicKey string
+	ClerkPrivateKey string
 }
 
 func Load() Config {
@@ -19,6 +21,8 @@ func Load() Config {
 
 	return Config {
 		DatabaseUrl: os.Getenv("DB_URL"),
+		CLerkPublicKey: os.Getenv("CLERK_PUBLIC_KEY"),
+		ClerkPrivateKey: os.Getenv("CLERK_PRIVATE_KEY"),
 	}
 	
 }
