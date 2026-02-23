@@ -21,7 +21,7 @@ function LandingPage() {
           </span>
         ))}
       </div>
-      <h1 className="hello-world">Hello World!</h1>
+      <h1 className="hello-world">Sam-Thomas.dev</h1>
       <p className="subtitle">Welcome to your new React app</p>
     </main>
   )

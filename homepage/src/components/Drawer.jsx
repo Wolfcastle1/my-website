@@ -17,6 +17,7 @@ function Drawer({ isOpen, onClose }) {
         </div>
         <ul className="drawer-menu">
           <li><Link to="/" onClick={onClose}>Home</Link></li>
+          <li><Link to="/about" onClick={onClose}>About Me</Link></li>
           <li><Link to="/links" onClick={onClose}>My Links</Link></li>
         </ul>
       </nav>

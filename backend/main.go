@@ -8,7 +8,9 @@ import (
 
 	"backend/internal/config"
 	"backend/internal/dao"
+	custommiddleware "backend/internal/middleware"
 
+	clerk "github.com/clerk/clerk-sdk-go/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
@@ -18,16 +20,19 @@ import (
 func main() {
 
 	cfg := config.Load()
+	clerk.SetKey(cfg.ClerkPrivateKey)
 	dao.ConnectDB(cfg.DatabaseUrl)
 	defer dao.Close()
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
+	r.Use(custommiddleware.CORS)
+	r.Use(custommiddleware.ClerkAuth)
 
 	r.Put("/{email}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		incrementEmailTokens(chi.URLParam(r, "email"))
-		json.NewEncoder(w).Encode(map[string]string{})
+		newTotal :=incrementEmailTokens(chi.URLParam(r, "email"))
+		json.NewEncoder(w).Encode(map[string]int{"newTotal": newTotal})
 	})
 
 	r.Get("/{email}", func(w http.ResponseWriter, r *http.Request) {
