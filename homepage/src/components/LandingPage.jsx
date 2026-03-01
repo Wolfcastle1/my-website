@@ -23,8 +23,7 @@ const ERROR_MESSAGES = [
   "There is an old saying in Tennessee — I know it's in Texas, probably in Tennessee — that says, fool me once, shame on... shame on you. Fool me — you can't get fooled again.",
   "When Stanley came to a set of two open doors, he entered the door on his left.",
   "It's easy to confuse 'what is' with 'what ought to be,' especially when 'what is' has worked out in your favor.", 
-  "Not all those who wander are lost.",
-  "",  
+  "Not all those who wander are lost.", 
 ]
 
 const FALLBACK_MESSAGE = "[Index out of bounds]: You've reached the end of my series of quotes :)"
