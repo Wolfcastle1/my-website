@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useUser, useAuth } from '@clerk/clerk-react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import TopBar from './components/TopBar'
 import Drawer from './components/Drawer'
 import LandingPage from './components/LandingPage'
@@ -15,6 +15,8 @@ function App() {
   const [coins, setCoins] = useState(0)
   const { user, isSignedIn } = useUser()
   const { getToken } = useAuth()
+  const location = useLocation()
+  const isHome = location.pathname === '/'
 
   useEffect(() => {
     if (!isSignedIn || !user) return
@@ -54,7 +56,7 @@ function App() {
 
   return (
     <>
-      <TopBar onMenuClick={handleMenuClick} coins={coins} onAddCoin={handleAddCoin} />
+      {!isHome && <TopBar onMenuClick={handleMenuClick} coins={coins} onAddCoin={handleAddCoin} />}
       <Drawer isOpen={isDrawerOpen} onClose={handleDrawerClose} />
       <Routes>
         <Route path="/" element={<LandingPage />} />
