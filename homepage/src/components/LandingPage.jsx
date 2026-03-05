@@ -1,16 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
 import './LandingPage.css'
+import Window from './Window'
 
 const lines = [
   [{ text: 'Welcome to https://sam-thomas.dev' }],
   [{ text: 'This is my personal website' }],
   [
     { text: 'Check out my ' },
-    { text: 'about page', href: '/about' },
+    { text: 'about page', action: 'about' },
     { text: ' and my ' },
-    { text: 'links', href: '/links' },
+    { text: 'links', action: 'links' },
   ],
+]
+
+const LINKS = [
+  { id: 'linkedin', label: 'LinkedIn', description: 'Connect with me professionally', url: 'https://www.linkedin.com/in/samuel-thomas-464076163/', icon: '💼' },
+  { id: 'github',   label: 'GitHub',   description: 'Check out my projects and code',  url: 'https://github.com/Wolfcastle1', icon: '🐙' },
+  { id: 'instagram',label: 'Instagram',description: 'Follow me on Instagram',          url: 'https://www.instagram.com/dummy_thicc_cavz', icon: '📸' },
 ]
 
 const ERROR_MESSAGES = [
@@ -34,7 +40,7 @@ function getLineLength(line) {
   return line.reduce((sum, seg) => sum + seg.text.length, 0)
 }
 
-function renderPartialLine(lineSegments, charsTyped) {
+function renderPartialLine(lineSegments, charsTyped, onAction) {
   let remaining = charsTyped
   return lineSegments.map((seg, i) => {
     if (remaining <= 0) return null
@@ -42,18 +48,19 @@ function renderPartialLine(lineSegments, charsTyped) {
     const text = seg.text.slice(0, visible)
     remaining -= visible
     const isFullyTyped = visible === seg.text.length
-    if (seg.href && isFullyTyped) {
+    if (seg.action && isFullyTyped) {
       return (
-        <Link key={i} to={seg.href} className="terminal-link">
+        <span key={i} className="terminal-link" style={{ cursor: 'pointer' }} onClick={() => onAction(seg.action)}>
           {text}
-        </Link>
+        </span>
       )
     }
     return <span key={i}>{text}</span>
   })
 }
 
-function LandingPage() {
+function LandingPage({ initialWindow = 'terminal' }) {
+  // Terminal content state
   const [animationDone, setAnimationDone] = useState(false)
   const [currentLine, setCurrentLine] = useState(0)
   const [currentChar, setCurrentChar] = useState(0)
@@ -63,21 +70,68 @@ function LandingPage() {
   const [exchanges, setExchanges] = useState([])
   const [pending, setPending] = useState(null)
   const [cleared, setCleared] = useState(false)
+
+  // Window visibility states
   const [terminalVisible, setTerminalVisible] = useState(false)
   const [terminalClosing, setTerminalClosing] = useState(false)
+  const [terminalPos, setTerminalPos] = useState(null)
+
+  const [aboutVisible, setAboutVisible] = useState(false)
+  const [aboutClosing, setAboutClosing] = useState(false)
+  const [aboutPos, setAboutPos] = useState(null)
+
+  const [linksVisible, setLinksVisible] = useState(false)
+  const [linksClosing, setLinksClosing] = useState(false)
+  const [linksPos, setLinksPos] = useState(null)
+
+  const [zIndexes, setZIndexes] = useState({ terminal: 10, about: 11, links: 12 })
   const [iconPositions, setIconPositions] = useState(null)
+
   const [terminalSize] = useState(() => ({
     width:  Math.min(720, window.innerWidth  * 0.9),
     height: window.innerHeight * 0.5,
   }))
+  const aboutSize = { width: Math.min(620, window.innerWidth * 0.9), height: Math.min(520, window.innerHeight * 0.85) }
+  const linksSize = { width: Math.min(480, window.innerWidth * 0.9), height: Math.min(300, window.innerHeight * 0.7) }
+
+  // Refs
   const inputRef = useRef(null)
-  const bodyRef = useRef(null)
-  const dockIconRef = useRef(null)
+  const bodyRef  = useRef(null)
+  const dockIconRef  = useRef(null)
   const aboutIconRef = useRef(null)
   const linksIconRef = useRef(null)
-  const dockOffset = useRef({ x: 0, y: 0 })
+  const terminalDockOffset = useRef({ x: 0, y: 0 })
+  const aboutDockOffset    = useRef({ x: 0, y: 0 })
+  const linksDockOffset    = useRef({ x: 0, y: 0 })
   const dragMoved = useRef(false)
   const messagePoolRef = useRef([...ERROR_MESSAGES].sort(() => Math.random() - 0.5))
+
+  // Helpers
+  // windowPos/windowSize: when provided, offset is relative to the window's actual center (needed for close after drag).
+  // When omitted, falls back to viewport center (correct for open, since windows always open centered).
+  const computeDockOffset = (iconRef, offsetRef, windowPos, windowSize) => {
+    const icon = iconRef.current
+    if (!icon) return
+    const rect = icon.getBoundingClientRect()
+    const iconCx = rect.left + rect.width  / 2
+    const iconCy = rect.top  + rect.height / 2
+    const refCx = windowPos ? windowPos.x + windowSize.width  / 2 : window.innerWidth  / 2
+    const refCy = windowPos ? windowPos.y + windowSize.height / 2 : window.innerHeight / 2
+    offsetRef.current = { x: iconCx - refCx, y: iconCy - refCy }
+  }
+
+  const getOpenPos = (size) => ({
+    x: (window.innerWidth  - size.width)  / 2,
+    y: (window.innerHeight - size.height) / 2,
+  })
+
+  const bringToFront = (key) => {
+    setZIndexes(prev => {
+      const maxZ = Math.max(...Object.values(prev))
+      if (prev[key] === maxZ) return prev
+      return { ...prev, [key]: maxZ + 1 }
+    })
+  }
 
   // Initial lines typing effect
   useEffect(() => {
@@ -88,9 +142,7 @@ function LandingPage() {
     const lineLength = getLineLength(line)
 
     if (currentChar < lineLength) {
-      const timer = setTimeout(() => {
-        setCurrentChar(c => c + 1)
-      }, TYPING_SPEED)
+      const timer = setTimeout(() => setCurrentChar(c => c + 1), TYPING_SPEED)
       return () => clearTimeout(timer)
     } else {
       const timer = setTimeout(() => {
@@ -109,14 +161,10 @@ function LandingPage() {
     const currentResponseLine = pending.lines[pending.lineIdx]
 
     if (pending.charIdx < currentResponseLine.text.length) {
-      const timer = setTimeout(() => {
-        setPending(p => ({ ...p, charIdx: p.charIdx + 1 }))
-      }, TYPING_SPEED)
+      const timer = setTimeout(() => setPending(p => ({ ...p, charIdx: p.charIdx + 1 })), TYPING_SPEED)
       return () => clearTimeout(timer)
     } else if (pending.lineIdx < pending.lines.length - 1) {
-      const timer = setTimeout(() => {
-        setPending(p => ({ ...p, lineIdx: p.lineIdx + 1, charIdx: 0 }))
-      }, LINE_DELAY)
+      const timer = setTimeout(() => setPending(p => ({ ...p, lineIdx: p.lineIdx + 1, charIdx: 0 })), LINE_DELAY)
       return () => clearTimeout(timer)
     } else {
       const timer = setTimeout(() => {
@@ -130,20 +178,16 @@ function LandingPage() {
   const isTypingDone = currentLine >= lines.length
   const showInput = isTypingDone && pending === null
 
-  // Auto-scroll to bottom as content is added, unless user has scrolled up
+  // Auto-scroll terminal to bottom
   useEffect(() => {
     const body = bodyRef.current
     if (!body) return
     const isNearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60
-    if (isNearBottom) {
-      body.scrollTop = body.scrollHeight
-    }
+    if (isNearBottom) body.scrollTop = body.scrollHeight
   }, [currentChar, currentLine, pending, exchanges])
 
   useEffect(() => {
-    if (showInput) {
-      inputRef.current?.focus()
-    }
+    if (showInput) inputRef.current?.focus()
   }, [showInput])
 
   // Initialize icon positions
@@ -158,7 +202,7 @@ function LandingPage() {
     })
   }, [])
 
-  // Clamp icon positions when viewport resizes
+  // Clamp icon positions on resize
   useEffect(() => {
     const handleResize = () => {
       const vw = window.innerWidth
@@ -180,22 +224,25 @@ function LandingPage() {
         }
       })
     }
-
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Open terminal on initial page load
+  // Auto-open initial window on load
   useEffect(() => {
-    const icon = dockIconRef.current
-    if (icon) {
-      const rect = icon.getBoundingClientRect()
-      dockOffset.current = {
-        x: (rect.left + rect.width / 2) - window.innerWidth / 2,
-        y: (rect.top + rect.height / 2) - window.innerHeight / 2,
-      }
+    if (initialWindow === 'about') {
+      computeDockOffset(aboutIconRef, aboutDockOffset)
+      setAboutPos(getOpenPos(aboutSize))
+      setAboutVisible(true)
+    } else if (initialWindow === 'links') {
+      computeDockOffset(linksIconRef, linksDockOffset)
+      setLinksPos(getOpenPos(linksSize))
+      setLinksVisible(true)
+    } else {
+      computeDockOffset(dockIconRef, terminalDockOffset)
+      setTerminalPos(getOpenPos(terminalSize))
+      setTerminalVisible(true)
     }
-    setTerminalVisible(true)
   }, [])
 
   const resetTerminalContent = () => {
@@ -221,47 +268,74 @@ function LandingPage() {
       const dx = e.clientX - startMouseX
       const dy = e.clientY - startMouseY
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved.current = true
-      setIconPositions(prev => ({
-        ...prev,
-        [key]: { x: startX + dx, y: startY + dy },
-      }))
+      setIconPositions(prev => ({ ...prev, [key]: { x: startX + dx, y: startY + dy } }))
     }
-
     const onMouseUp = () => {
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
       document.body.classList.remove('dragging-icon')
     }
-
     document.body.classList.add('dragging-icon')
     window.addEventListener('mousemove', onMouseMove)
     window.addEventListener('mouseup', onMouseUp)
   }
 
-  const handleDockIconClick = () => {
+  // Terminal handlers
+  const handleTerminalOpen = () => {
     if (dragMoved.current) { dragMoved.current = false; return }
     if (terminalVisible) return
-
-    const icon = dockIconRef.current
-    if (icon) {
-      const rect = icon.getBoundingClientRect()
-      dockOffset.current = {
-        x: (rect.left + rect.width / 2) - window.innerWidth / 2,
-        y: (rect.top + rect.height / 2) - window.innerHeight / 2,
-      }
-    }
-
+    computeDockOffset(dockIconRef, terminalDockOffset)
+    setTerminalPos(getOpenPos(terminalSize))
     resetTerminalContent()
     setTerminalVisible(true)
   }
+  const handleTerminalClose = () => {
+    if (terminalClosing) return
+    computeDockOffset(dockIconRef, terminalDockOffset, terminalPos, terminalSize)
+    setTerminalClosing(true)
+  }
+  const handleTerminalAnimationEnd = () => {
+    if (terminalClosing) { setTerminalVisible(false); setTerminalClosing(false) }
+    else setAnimationDone(true)
+  }
 
-  const handleAnimationEnd = () => {
-    if (terminalClosing) {
-      setTerminalVisible(false)
-      setTerminalClosing(false)
-    } else {
-      setAnimationDone(true)
-    }
+  // About handlers
+  const handleAboutOpen = () => {
+    if (dragMoved.current) { dragMoved.current = false; return }
+    if (aboutVisible) { bringToFront('about'); return }
+    computeDockOffset(aboutIconRef, aboutDockOffset)
+    setAboutPos(getOpenPos(aboutSize))
+    setAboutVisible(true)
+  }
+  const handleAboutClose = () => {
+    if (aboutClosing) return
+    computeDockOffset(aboutIconRef, aboutDockOffset, aboutPos, aboutSize)
+    setAboutClosing(true)
+  }
+  const handleAboutAnimationEnd = () => {
+    if (aboutClosing) { setAboutVisible(false); setAboutClosing(false) }
+  }
+
+  // Links handlers
+  const handleLinksOpen = () => {
+    if (dragMoved.current) { dragMoved.current = false; return }
+    if (linksVisible) { bringToFront('links'); return }
+    computeDockOffset(linksIconRef, linksDockOffset)
+    setLinksPos(getOpenPos(linksSize))
+    setLinksVisible(true)
+  }
+  const handleLinksClose = () => {
+    if (linksClosing) return
+    computeDockOffset(linksIconRef, linksDockOffset, linksPos, linksSize)
+    setLinksClosing(true)
+  }
+  const handleLinksAnimationEnd = () => {
+    if (linksClosing) { setLinksVisible(false); setLinksClosing(false) }
+  }
+
+  const handleTerminalAction = (action) => {
+    if (action === 'about') handleAboutOpen()
+    else if (action === 'links') handleLinksOpen()
   }
 
   const handleSubmit = () => {
@@ -275,10 +349,10 @@ function LandingPage() {
       return
     }
 
-    let lines
+    let responseLines
     switch (cmd) {
       case 'ls':
-        lines = [
+        responseLines = [
           { text: ' passwords.txt' },
           { text: 'wait...' },
           { text: 'security breach detected... initiating self-destruct sequence...', className: 'terminal-warning' },
@@ -289,12 +363,12 @@ function LandingPage() {
         ]
         break
       case 'help':
-        lines = [
+        responseLines = [
           { text: '...knock, and the door will be opnend.', className: 'terminal-advice' },
         ]
         break
       case 'knock':
-        lines = [
+        responseLines = [
           { text: 'usage: knock <door-name>', className: 'terminal-error-code' },
         ]
         break
@@ -302,51 +376,70 @@ function LandingPage() {
         const funnyMsg = messagePoolRef.current.length > 0
           ? messagePoolRef.current.pop()
           : FALLBACK_MESSAGE
-        lines = [
+        responseLines = [
           { text: '[ERROR]', className: 'terminal-error-code' },
           { text: funnyMsg, className: 'terminal-error-msg' },
         ]
       }
     }
 
-    setPending({ cmd: userInput, lines, lineIdx: 0, charIdx: 0 })
+    setPending({ cmd: userInput, lines: responseLines, lineIdx: 0, charIdx: 0 })
     setUserInput('')
   }
 
+  const ASCII_ART = (() => {
+    const lines = [
+      ' ____    _    __  __',
+      '/ ___|  / \\  |  \\/  |',
+      '\\___ \\ / _ \\ | |\\/| |',
+      ' ___) / ___ \\| |  | |',
+      '|____/_/   \\_\\_|  |_|',
+      '',
+      ' _____ _   _  ___  __  __    _    ____',
+      '|_   _| | | |/ _ \\|  \\/  |  / \\  / ___|',
+      '  | | | |_| | | | | |\\/| | / _ \\ \\___ \\',
+      '  | | |  _  | |_| | |  | |/ ___ \\ ___) |',
+      '  |_| |_| |_|\\___/|_|  |_/_/   \\_\\____/ ',
+    ]
+    const max    = Math.max(...lines.map(l => l.length))
+    const top    = ' ' + '_'.repeat(max + 2)
+    const bottom = '|' + '_'.repeat(max + 2) + '|'
+    return [top, ...lines.map(l => '| ' + l.padEnd(max) + ' |'), bottom].join('\n')
+  })()
+
   return (
     <main className="landing-page">
+      <pre className="ascii-bg" aria-hidden="true">{ASCII_ART}</pre>
       {iconPositions && (
         <>
-          <Link
+          <button
             ref={aboutIconRef}
-            to="/about"
             className="desktop-icon"
             style={{ position: 'absolute', left: iconPositions.about.x, top: iconPositions.about.y }}
             onMouseDown={e => handleIconMouseDown(e, 'about')}
-            onClick={e => { if (dragMoved.current) { e.preventDefault(); dragMoved.current = false } }}
+            onClick={handleAboutOpen}
           >
             <span className="desktop-icon-emoji">📖</span>
             <span className="desktop-icon-label">About Me</span>
-          </Link>
+          </button>
 
-          <Link
+          <button
             ref={linksIconRef}
-            to="/links"
             className="desktop-icon"
             style={{ position: 'absolute', left: iconPositions.links.x, top: iconPositions.links.y }}
             onMouseDown={e => handleIconMouseDown(e, 'links')}
-            onClick={e => { if (dragMoved.current) { e.preventDefault(); dragMoved.current = false } }}
+            onClick={handleLinksOpen}
           >
             <span className="desktop-icon-emoji">🔗</span>
             <span className="desktop-icon-label">Links</span>
-          </Link>
+          </button>
 
           <button
             ref={dockIconRef}
             className="desktop-icon dock-terminal-icon"
             style={{ position: 'absolute', left: iconPositions.terminal.x, top: iconPositions.terminal.y }}
             onMouseDown={e => handleIconMouseDown(e, 'terminal')}
-            onClick={handleDockIconClick}
+            onClick={handleTerminalOpen}
           >
             <span className="desktop-icon-emoji">💻</span>
             <span className="desktop-icon-label">Terminal</span>
@@ -354,106 +447,168 @@ function LandingPage() {
         </>
       )}
 
-      {terminalVisible && (
-        <div
-          className={`terminal-window${terminalClosing ? ' closing' : ''}`}
-          style={{
-            '--dock-x': `${dockOffset.current.x}px`,
-            '--dock-y': `${dockOffset.current.y}px`,
-            width:  terminalSize.width,
-            height: terminalSize.height,
-          }}
-          onAnimationEnd={handleAnimationEnd}
-        >
-          <div className="terminal-header">
-            <span
-              className="terminal-dot red"
-              onClick={() => !terminalClosing && setTerminalClosing(true)}
-            />
-            <span className="terminal-dot yellow" />
-            <span className="terminal-dot green" />
-            <span className="terminal-title">sam@portfolio ~ </span>
-          </div>
-          <div className="terminal-body" ref={bodyRef}>
-            {/* Initial auto-typed lines */}
-            {!cleared && lines.map((line, lineIdx) => {
-              if (lineIdx > currentLine) return null
-              const isCompleted = completedLines.includes(lineIdx)
-              const charsToShow = lineIdx < currentLine ? getLineLength(line) : currentChar
-              return (
-                <div key={lineIdx} className="terminal-line">
-                  {renderPartialLine(line, charsToShow)}
-                  {!isCompleted && lineIdx === currentLine && (
-                    <span className="terminal-cursor">▋</span>
-                  )}
-                </div>
-              )
-            })}
-
-            {/* Completed exchanges */}
-            {isTypingDone && exchanges.map((exchange, i) => (
-              <div key={i}>
-                <div className="terminal-line">
-                  <span className="terminal-prompt">$ </span>
-                  <span>{exchange.cmd}</span>
-                </div>
-                {exchange.lines.map((line, lineIdx) => (
-                  <div key={lineIdx} className={`terminal-line ${line.className || ''}`}>
-                    {line.text}
-                  </div>
-                ))}
+      {/* Terminal window */}
+      <Window
+        title="sam@portfolio ~ "
+        visible={terminalVisible}
+        closing={terminalClosing}
+        pos={terminalPos}
+        size={terminalSize}
+        zIndex={zIndexes.terminal}
+        dockOffset={terminalDockOffset.current}
+        onClose={handleTerminalClose}
+        onPosChange={setTerminalPos}
+        onInteract={() => bringToFront('terminal')}
+        onAnimationEnd={handleTerminalAnimationEnd}
+      >
+        <div className="terminal-body" ref={bodyRef}>
+          {!cleared && lines.map((line, lineIdx) => {
+            if (lineIdx > currentLine) return null
+            const isCompleted = completedLines.includes(lineIdx)
+            const charsToShow = lineIdx < currentLine ? getLineLength(line) : currentChar
+            return (
+              <div key={lineIdx} className="terminal-line">
+                {renderPartialLine(line, charsToShow, handleTerminalAction)}
+                {!isCompleted && lineIdx === currentLine && (
+                  <span className="terminal-cursor">▋</span>
+                )}
               </div>
-            ))}
+            )
+          })}
 
-            {/* Currently-typing response */}
-            {pending && (
-              <div>
-                <div className="terminal-line">
-                  <span className="terminal-prompt">$ </span>
-                  <span>{pending.cmd}</span>
-                </div>
-                {pending.lines.map((line, lineIdx) => {
-                  if (lineIdx > pending.lineIdx) return null
-                  const chars = lineIdx < pending.lineIdx ? line.text.length : pending.charIdx
-                  const isCurrent = lineIdx === pending.lineIdx && chars < line.text.length
-                  return (
-                    <div key={lineIdx} className={`terminal-line ${line.className || ''}`}>
-                      {line.text.slice(0, chars)}
-                      {isCurrent && <span className="terminal-cursor">▋</span>}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-
-            {/* Interactive input prompt */}
-            {showInput && (
-              <div
-                className="terminal-line terminal-input-line"
-                onClick={() => inputRef.current?.focus()}
-              >
+          {isTypingDone && exchanges.map((exchange, i) => (
+            <div key={i}>
+              <div className="terminal-line">
                 <span className="terminal-prompt">$ </span>
-                <div className="terminal-input-wrapper">
-                  <span className="terminal-input-mirror">{userInput}</span>
-                  {inputFocused && <span className="terminal-cursor">▋</span>}
-                  <input
-                    ref={inputRef}
-                    className="terminal-input-hidden"
-                    value={userInput}
-                    onChange={e => setUserInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
-                    spellCheck={false}
-                    autoComplete="off"
-                    autoCorrect="off"
-                  />
-                </div>
+                <span>{exchange.cmd}</span>
               </div>
-            )}
+              {exchange.lines.map((line, lineIdx) => (
+                <div key={lineIdx} className={`terminal-line ${line.className || ''}`}>
+                  {line.text}
+                </div>
+              ))}
+            </div>
+          ))}
+
+          {pending && (
+            <div>
+              <div className="terminal-line">
+                <span className="terminal-prompt">$ </span>
+                <span>{pending.cmd}</span>
+              </div>
+              {pending.lines.map((line, lineIdx) => {
+                if (lineIdx > pending.lineIdx) return null
+                const chars = lineIdx < pending.lineIdx ? line.text.length : pending.charIdx
+                const isCurrent = lineIdx === pending.lineIdx && chars < line.text.length
+                return (
+                  <div key={lineIdx} className={`terminal-line ${line.className || ''}`}>
+                    {line.text.slice(0, chars)}
+                    {isCurrent && <span className="terminal-cursor">▋</span>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {showInput && (
+            <div
+              className="terminal-line terminal-input-line"
+              onClick={() => inputRef.current?.focus()}
+            >
+              <span className="terminal-prompt">$ </span>
+              <div className="terminal-input-wrapper">
+                <span className="terminal-input-mirror">{userInput}</span>
+                {inputFocused && <span className="terminal-cursor">▋</span>}
+                <input
+                  ref={inputRef}
+                  className="terminal-input-hidden"
+                  value={userInput}
+                  onChange={e => setUserInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
+                  spellCheck={false}
+                  autoComplete="off"
+                  autoCorrect="off"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </Window>
+
+      {/* About Me window */}
+      <Window
+        title="about@portfolio ~ "
+        visible={aboutVisible}
+        closing={aboutClosing}
+        pos={aboutPos}
+        size={aboutSize}
+        zIndex={zIndexes.about}
+        dockOffset={aboutDockOffset.current}
+        onClose={handleAboutClose}
+        onPosChange={setAboutPos}
+        onInteract={() => bringToFront('about')}
+        onAnimationEnd={handleAboutAnimationEnd}
+      >
+        <div className="about-body">
+          <div className="about-hero">
+            <div className="about-avatar">ST</div>
+            <div className="about-intro">
+              <h2 className="about-name">Sam Thomas</h2>
+              <p className="about-tagline">Software Developer</p>
+            </div>
+          </div>
+          <p className="about-bio">
+            A software developer who enjoys building full-stack web applications across the whole stack —
+            clean UIs in React, efficient Go backends, and PostgreSQL schemas that scale.
+          </p>
+          <h3 className="about-section-title">Skills</h3>
+          <div className="about-skills">
+            {['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Git'].map(s => (
+              <span key={s} className="about-skill-badge">{s}</span>
+            ))}
+          </div>
+          <h3 className="about-section-title">Experience</h3>
+          <div className="about-timeline">
+            <div className="about-timeline-item">
+              <span className="about-timeline-period">2024 – Present</span>
+              <div>
+                <strong>Software Engineer</strong>
+                <p>Your Company</p>
+              </div>
+            </div>
           </div>
         </div>
-      )}
+      </Window>
+
+      {/* Links window */}
+      <Window
+        title="links@portfolio ~ "
+        visible={linksVisible}
+        closing={linksClosing}
+        pos={linksPos}
+        size={linksSize}
+        zIndex={zIndexes.links}
+        dockOffset={linksDockOffset.current}
+        onClose={handleLinksClose}
+        onPosChange={setLinksPos}
+        onInteract={() => bringToFront('links')}
+        onAnimationEnd={handleLinksAnimationEnd}
+      >
+        <div className="links-body">
+          {LINKS.map(link => (
+            <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="link-card">
+              <span className="link-card-icon">{link.icon}</span>
+              <div className="link-card-text">
+                <span className="link-card-label">{link.label}</span>
+                <span className="link-card-description">{link.description}</span>
+              </div>
+              <span className="link-card-arrow">→</span>
+            </a>
+          ))}
+        </div>
+      </Window>
     </main>
   )
 }

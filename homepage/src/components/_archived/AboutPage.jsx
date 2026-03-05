@@ -60,28 +60,28 @@ const contexts = {
   },
 
   Professional: {
-    bio: 'Software engineer based in Chicago, Illinois. I enjoy working on a team, solving problems, and building tools.',
+    bio: 'A software developer who enjoys building full-stack web applications. I work across the whole stack — crafting clean UIs in React, writing efficient Go backends, and designing PostgreSQL schemas that scale.',
     skillsTitle: 'Technical Skills',
-    skills: ['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Node.js', 'Git', 'REST APIs'], // TODO: update with your actual skills
+    skills: ['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Node.js', 'Git', 'REST APIs'],
     timelineTitle: 'Experience & Education',
     timeline: [
       {
-        period: '2021 – Present', // TODO: confirm exact start date at JPMorganChase
-        title: 'Software Engineer', // TODO: add your exact job title
-        organisation: 'JPMorganChase',
-        description: 'TODO: describe your role and what you work on day-to-day.',
+        period: '2024 – Present',
+        title: 'Software Engineer',
+        organisation: 'Your Company',
+        description: 'Brief description of your role and what you work on day-to-day.',
       },
       {
-        period: 'TODO', // TODO: add any roles between NIU and JPMorganChase
-        title: 'TODO',
-        organisation: 'TODO',
-        description: 'TODO: add any previous roles here.',
+        period: '2022 – 2024',
+        title: 'Junior Developer',
+        organisation: 'Previous Company',
+        description: 'Brief description of your responsibilities and projects here.',
       },
       {
-        period: '2017 – 2021',
-        title: 'BSc Computer Science', // TODO: confirm your exact degree name
-        organisation: 'Northern Illinois University',
-        description: 'TODO: add details about your degree and any notable projects or achievements.',
+        period: '2018 – 2022',
+        title: 'BSc Computer Science',
+        organisation: 'Your University',
+        description: 'Graduated with a focus on software engineering and distributed systems.',
       },
     ],
   },
@@ -93,7 +93,7 @@ function ContentPanel({ ctx, fontClass, panelClass }) {
 
       <section className="about-hero">
         <div className="profile-photo-wrapper">
-          <div className="profile-initials">ST</div>
+          <div className="profile-initials">YN</div>
           <img
             src="/profile.jpg"
             alt="Profile"
@@ -102,7 +102,7 @@ function ContentPanel({ ctx, fontClass, panelClass }) {
           />
         </div>
         <div className="about-intro">
-          <h1 className="about-name">Samuel Thomas</h1>
+          <h1 className="about-name">Your Name</h1>
           <p className="about-bio">{ctx.bio}</p>
         </div>
       </section>
