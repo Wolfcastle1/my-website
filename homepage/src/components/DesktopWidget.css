@@ -1,0 +1,21 @@
+.desktop-widget {
+  width: 160px;
+  height: 90px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #10b981, #0d9488);
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.45);
+  cursor: grab;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.widget-clock {
+  font-size: 22px;
+  font-family: monospace;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 1px;
+}

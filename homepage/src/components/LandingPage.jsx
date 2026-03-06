@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './LandingPage.css'
 import Window from './Window'
+import DesktopWidget from './DesktopWidget'
 
 const lines = [
   [{ text: 'Welcome to https://sam-thomas.dev' }],
@@ -103,6 +104,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
   const terminalDockOffset = useRef({ x: 0, y: 0 })
   const aboutDockOffset    = useRef({ x: 0, y: 0 })
   const linksDockOffset    = useRef({ x: 0, y: 0 })
+  const widgetRef          = useRef(null)
   const dragMoved = useRef(false)
   const messagePoolRef = useRef([...ERROR_MESSAGES].sort(() => Math.random() - 0.5))
 
@@ -196,9 +198,10 @@ function LandingPage({ initialWindow = 'terminal' }) {
     const vh = window.innerHeight
     const hPad = Math.max(40, vw * 0.08)
     setIconPositions({
-      about:    { x: hPad,            y: vh * 0.5 - 50 },
-      links:    { x: vw - hPad - 80,  y: vh * 0.5 - 50 },
-      terminal: { x: hPad,            y: vh - 140       },
+      about:    { x: hPad,                  y: vh * 0.5 - 50    },
+      links:    { x: vw - hPad - 80,        y: vh * 0.5 - 50    },
+      terminal: { x: hPad,                  y: vh - 140         },
+      widget:   { x: vw - hPad - 180,       y: vh * 0.5 + 60    },
     })
   }, [])
 
@@ -221,6 +224,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
           about:    clamp(prev.about,    aboutIconRef),
           links:    clamp(prev.links,    linksIconRef),
           terminal: clamp(prev.terminal, dockIconRef),
+          widget:   clamp(prev.widget,   widgetRef),
         }
       })
     }
@@ -444,6 +448,12 @@ function LandingPage({ initialWindow = 'terminal' }) {
             <span className="desktop-icon-emoji">💻</span>
             <span className="desktop-icon-label">Terminal</span>
           </button>
+
+          <DesktopWidget
+            ref={widgetRef}
+            style={{ left: iconPositions.widget.x, top: iconPositions.widget.y }}
+            onMouseDown={e => handleIconMouseDown(e, 'widget')}
+          />
         </>
       )}
 
