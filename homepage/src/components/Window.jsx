@@ -3,6 +3,26 @@ import './Window.css'
 function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClose, onPosChange, onInteract, onAnimationEnd, children }) {
   if (!visible) return null
 
+  const handleHeaderTouchStart = (e) => {
+    if (e.target.classList.contains('window-dot')) return
+    const touch = e.touches[0]
+    const startTouchX = touch.clientX
+    const startTouchY = touch.clientY
+    const { x: startX, y: startY } = pos
+
+    const onTouchMove = (te) => {
+      te.preventDefault()
+      const t = te.touches[0]
+      onPosChange({ x: startX + t.clientX - startTouchX, y: startY + t.clientY - startTouchY })
+    }
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+  }
+
   const handleHeaderMouseDown = (e) => {
     if (e.target.classList.contains('window-dot')) return
     e.preventDefault()
@@ -37,9 +57,10 @@ function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClos
         zIndex,
       }}
       onMouseDown={onInteract}
+      onTouchStart={onInteract}
       onAnimationEnd={onAnimationEnd}
     >
-      <div className="window-header" onMouseDown={handleHeaderMouseDown}>
+      <div className="window-header" onMouseDown={handleHeaderMouseDown} onTouchStart={handleHeaderTouchStart}>
         <span className="window-dot red" onClick={onClose} />
         <span className="window-dot yellow" />
         <span className="window-dot green" />

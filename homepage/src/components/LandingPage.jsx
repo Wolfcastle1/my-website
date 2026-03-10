@@ -261,6 +261,29 @@ function LandingPage({ initialWindow = 'terminal' }) {
     messagePoolRef.current = [...ERROR_MESSAGES].sort(() => Math.random() - 0.5)
   }
 
+  const handleIconTouchStart = (e, key) => {
+    dragMoved.current = false
+    const touch = e.touches[0]
+    const startTouchX = touch.clientX
+    const startTouchY = touch.clientY
+    const { x: startX, y: startY } = iconPositions[key]
+
+    const onTouchMove = (te) => {
+      te.preventDefault()
+      const t = te.touches[0]
+      const dx = t.clientX - startTouchX
+      const dy = t.clientY - startTouchY
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved.current = true
+      setIconPositions(prev => ({ ...prev, [key]: { x: startX + dx, y: startY + dy } }))
+    }
+    const onTouchEnd = () => {
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+    }
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
+    window.addEventListener('touchend', onTouchEnd)
+  }
+
   const handleIconMouseDown = (e, key) => {
     e.preventDefault()
     dragMoved.current = false
@@ -391,29 +414,8 @@ function LandingPage({ initialWindow = 'terminal' }) {
     setUserInput('')
   }
 
-  const ASCII_ART = (() => {
-    const lines = [
-      ' ____    _    __  __',
-      '/ ___|  / \\  |  \\/  |',
-      '\\___ \\ / _ \\ | |\\/| |',
-      ' ___) / ___ \\| |  | |',
-      '|____/_/   \\_\\_|  |_|',
-      '',
-      ' _____ _   _  ___  __  __    _    ____',
-      '|_   _| | | |/ _ \\|  \\/  |  / \\  / ___|',
-      '  | | | |_| | | | | |\\/| | / _ \\ \\___ \\',
-      '  | | |  _  | |_| | |  | |/ ___ \\ ___) |',
-      '  |_| |_| |_|\\___/|_|  |_/_/   \\_\\____/ ',
-    ]
-    const max    = Math.max(...lines.map(l => l.length))
-    const top    = ' ' + '_'.repeat(max + 2)
-    const bottom = '|' + '_'.repeat(max + 2) + '|'
-    return [top, ...lines.map(l => '| ' + l.padEnd(max) + ' |'), bottom].join('\n')
-  })()
-
   return (
     <main className="landing-page">
-      <pre className="ascii-bg" aria-hidden="true">{ASCII_ART}</pre>
       {iconPositions && (
         <>
           <button
@@ -421,6 +423,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
             className="desktop-icon"
             style={{ position: 'absolute', left: iconPositions.about.x, top: iconPositions.about.y }}
             onMouseDown={e => handleIconMouseDown(e, 'about')}
+            onTouchStart={e => handleIconTouchStart(e, 'about')}
             onClick={handleAboutOpen}
           >
             <span className="desktop-icon-emoji">📖</span>
@@ -432,6 +435,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
             className="desktop-icon"
             style={{ position: 'absolute', left: iconPositions.links.x, top: iconPositions.links.y }}
             onMouseDown={e => handleIconMouseDown(e, 'links')}
+            onTouchStart={e => handleIconTouchStart(e, 'links')}
             onClick={handleLinksOpen}
           >
             <span className="desktop-icon-emoji">🔗</span>
@@ -443,6 +447,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
             className="desktop-icon dock-terminal-icon"
             style={{ position: 'absolute', left: iconPositions.terminal.x, top: iconPositions.terminal.y }}
             onMouseDown={e => handleIconMouseDown(e, 'terminal')}
+            onTouchStart={e => handleIconTouchStart(e, 'terminal')}
             onClick={handleTerminalOpen}
           >
             <span className="desktop-icon-emoji">💻</span>
@@ -453,6 +458,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
             ref={widgetRef}
             style={{ left: iconPositions.widget.x, top: iconPositions.widget.y }}
             onMouseDown={e => handleIconMouseDown(e, 'widget')}
+            onTouchStart={e => handleIconTouchStart(e, 'widget')}
           />
         </>
       )}
