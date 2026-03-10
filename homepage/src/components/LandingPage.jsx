@@ -12,6 +12,7 @@ const lines = [
     { text: ' and my ' },
     { text: 'links', action: 'links' },
   ],
+  [{ text: 'commands: whoami · skills · contact · about · links · ls · clear' }],
 ]
 
 const LINKS = [
@@ -88,8 +89,9 @@ function LandingPage({ initialWindow = 'terminal' }) {
   const [zIndexes, setZIndexes] = useState({ terminal: 10, about: 11, links: 12 })
   const [iconPositions, setIconPositions] = useState(null)
 
+  const isMobile = window.innerWidth < 600
   const [terminalSize] = useState(() => ({
-    width:  Math.min(720, window.innerWidth  * 0.9),
+    width:  Math.min(720, window.innerWidth * 0.9),
     height: window.innerHeight * 0.5,
   }))
   const aboutSize = { width: Math.min(620, window.innerWidth * 0.9), height: Math.min(520, window.innerHeight * 0.85) }
@@ -107,6 +109,8 @@ function LandingPage({ initialWindow = 'terminal' }) {
   const widgetRef          = useRef(null)
   const dragMoved = useRef(false)
   const messagePoolRef = useRef([...ERROR_MESSAGES].sort(() => Math.random() - 0.5))
+  const commandHistoryRef = useRef([])
+  const historyIndexRef   = useRef(-1)
 
   // Helpers
   // windowPos/windowSize: when provided, offset is relative to the window's actual center (needed for close after drag).
@@ -373,6 +377,10 @@ function LandingPage({ initialWindow = 'terminal' }) {
     if (!userInput.trim()) return
     const cmd = userInput.trim().toLowerCase()
 
+    const history = commandHistoryRef.current
+    if (history[history.length - 1] !== cmd) history.push(cmd)
+    historyIndexRef.current = -1
+
     if (cmd === 'clear') {
       setExchanges([])
       setCleared(true)
@@ -395,13 +403,49 @@ function LandingPage({ initialWindow = 'terminal' }) {
         break
       case 'help':
         responseLines = [
-          { text: '...knock, and the door will be opnend.', className: 'terminal-advice' },
+          { text: 'available commands:', className: 'terminal-advice' },
+          { text: '  whoami   — who built this', className: 'terminal-warning' },
+          { text: '  skills   — tech stack', className: 'terminal-warning' },
+          { text: '  contact  — find me online', className: 'terminal-warning' },
+          { text: '  about    — open the About Me window', className: 'terminal-warning' },
+          { text: '  links    — open the Links window', className: 'terminal-warning' },
+          { text: '  ls       — list files (proceed with caution)', className: 'terminal-warning' },
+          { text: '  clear    — clear the terminal', className: 'terminal-warning' },
         ]
         break
-      case 'knock':
+      case 'whoami':
         responseLines = [
-          { text: 'usage: knock <door-name>', className: 'terminal-error-code' },
+          { text: 'Sam Thomas', className: 'terminal-advice' },
+          { text: 'Software Developer  ·  started 2021', className: 'terminal-warning' },
+          { text: 'Full-stack: React frontends, Go backends, PostgreSQL databases' },
         ]
+        break
+      case 'skills':
+        responseLines = [
+          { text: 'Languages & Runtimes', className: 'terminal-advice' },
+          { text: '  JavaScript  ·  Go', className: 'terminal-warning' },
+          { text: 'Frontend', className: 'terminal-advice' },
+          { text: '  React  ·  HTML / CSS', className: 'terminal-warning' },
+          { text: 'Backend & Data', className: 'terminal-advice' },
+          { text: '  PostgreSQL  ·  REST APIs', className: 'terminal-warning' },
+          { text: 'Tooling', className: 'terminal-advice' },
+          { text: '  Git  ·  Vite  ·  Railway  ·  Cloudflare Pages', className: 'terminal-warning' },
+        ]
+        break
+      case 'contact':
+        responseLines = [
+          { text: 'GitHub    →  github.com/Wolfcastle1', className: 'terminal-advice' },
+          { text: 'LinkedIn  →  linkedin.com/in/samuel-thomas-464076163', className: 'terminal-advice' },
+          { text: 'Instagram →  instagram.com/dummy_thicc_cavz', className: 'terminal-advice' },
+        ]
+        break
+      case 'about':
+        handleAboutOpen()
+        responseLines = [{ text: 'Opening About Me...', className: 'terminal-advice' }]
+        break
+      case 'links':
+        handleLinksOpen()
+        responseLines = [{ text: 'Opening Links...', className: 'terminal-advice' }]
         break
       default: {
         const funnyMsg = messagePoolRef.current.length > 0
@@ -418,8 +462,10 @@ function LandingPage({ initialWindow = 'terminal' }) {
     setUserInput('')
   }
 
+  const rainbowAngle = Math.atan2(window.innerHeight, window.innerWidth) * (180 / Math.PI)
+
   return (
-    <main className="landing-page">
+    <main className="landing-page" style={{ '--rainbow-angle': `${rainbowAngle}deg` }}>
       {iconPositions && (
         <>
           <button
@@ -544,7 +590,33 @@ function LandingPage({ initialWindow = 'terminal' }) {
                   className="terminal-input-hidden"
                   value={userInput}
                   onChange={e => setUserInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') { handleSubmit(); return }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      const history = commandHistoryRef.current
+                      if (history.length === 0) return
+                      const newIndex = historyIndexRef.current === -1
+                        ? history.length - 1
+                        : Math.max(0, historyIndexRef.current - 1)
+                      historyIndexRef.current = newIndex
+                      setUserInput(history[newIndex])
+                      return
+                    }
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      if (historyIndexRef.current === -1) return
+                      const newIndex = historyIndexRef.current + 1
+                      if (newIndex >= commandHistoryRef.current.length) {
+                        historyIndexRef.current = -1
+                        setUserInput('')
+                      } else {
+                        historyIndexRef.current = newIndex
+                        setUserInput(commandHistoryRef.current[newIndex])
+                      }
+                      return
+                    }
+                  }}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
                   spellCheck={false}

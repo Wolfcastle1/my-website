@@ -52,7 +52,15 @@
   cursor: default;
 }
 
-.window-dot.red    { background: #ff5f57; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+.window-dot.red    { background: #ff5f57; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; position: relative; }
+
+@media (pointer: coarse) {
+  .window-dot.red::before {
+    content: '';
+    position: absolute;
+    inset: -14px;
+  }
+}
 .window-dot.yellow { background: #ffbd2e; }
 .window-dot.green  { background: #28c840; }
 

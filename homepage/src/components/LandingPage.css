@@ -14,7 +14,7 @@
   left: 50%;
   width: 200vmax;
   height: 16vh;
-  transform: translate(-50%, -50%) rotate(45deg);
+  transform: translate(-50%, -50%) rotate(var(--rainbow-angle, 45deg));
   height: 16vh;
   background: linear-gradient(
     to bottom,
