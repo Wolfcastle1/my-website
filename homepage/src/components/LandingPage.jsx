@@ -196,12 +196,16 @@ function LandingPage({ initialWindow = 'terminal' }) {
   useEffect(() => {
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const hPad = Math.max(40, vw * 0.08)
+    const iconW = 80
+    const iconH = 90
+    const bPad  = 16
+    const gap   = Math.max(20, (vw - 3 * iconW) / 4)
+    const iconY = vh - iconH - bPad
     setIconPositions({
-      about:    { x: hPad,                  y: vh * 0.5 - 50    },
-      links:    { x: vw - hPad - 80,        y: vh * 0.5 - 50    },
-      terminal: { x: hPad,                  y: vh - 140         },
-      widget:   { x: vw - hPad - 180,       y: vh * 0.5 + 60    },
+      widget:   { x: vw - 180,                       y: 20                  },
+      about:    { x: gap,                             y: iconY               },
+      terminal: { x: gap * 2 + iconW,                y: iconY               },
+      links:    { x: gap * 3 + iconW * 2,             y: iconY               },
     })
   }, [])
 
@@ -477,7 +481,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
         onInteract={() => bringToFront('terminal')}
         onAnimationEnd={handleTerminalAnimationEnd}
       >
-        <div className="terminal-body" ref={bodyRef}>
+        <div className="terminal-body" ref={bodyRef} onClick={() => inputRef.current?.focus()}>
           {!cleared && lines.map((line, lineIdx) => {
             if (lineIdx > currentLine) return null
             const isCompleted = completedLines.includes(lineIdx)

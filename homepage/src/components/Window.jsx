@@ -3,6 +3,11 @@ import './Window.css'
 function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClose, onPosChange, onInteract, onAnimationEnd, children }) {
   if (!visible) return null
 
+  const clampPos = ({ x, y }) => ({
+    x: Math.min(Math.max(x, -(size.width - 80)), window.innerWidth - 80),
+    y: Math.min(Math.max(y, 0), window.innerHeight - 36),
+  })
+
   const handleHeaderTouchStart = (e) => {
     if (e.target.classList.contains('window-dot')) return
     const touch = e.touches[0]
@@ -13,7 +18,7 @@ function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClos
     const onTouchMove = (te) => {
       te.preventDefault()
       const t = te.touches[0]
-      onPosChange({ x: startX + t.clientX - startTouchX, y: startY + t.clientY - startTouchY })
+      onPosChange(clampPos({ x: startX + t.clientX - startTouchX, y: startY + t.clientY - startTouchY }))
     }
     const onTouchEnd = () => {
       window.removeEventListener('touchmove', onTouchMove)
@@ -31,7 +36,7 @@ function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClos
     const { x: startX, y: startY } = pos
 
     const onMouseMove = (me) => {
-      onPosChange({ x: startX + me.clientX - startMouseX, y: startY + me.clientY - startMouseY })
+      onPosChange(clampPos({ x: startX + me.clientX - startMouseX, y: startY + me.clientY - startMouseY }))
     }
     const onMouseUp = () => {
       window.removeEventListener('mousemove', onMouseMove)
