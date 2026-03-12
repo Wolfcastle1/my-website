@@ -1,6 +1,6 @@
 import './Window.css'
 
-function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClose, onPosChange, onInteract, onAnimationEnd, children }) {
+function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClose, onPosChange, onInteract, onAnimationEnd, scrollable = true, children }) {
   if (!visible) return null
 
   const clampPos = ({ x, y }) => ({
@@ -71,7 +71,7 @@ function Window({ title, visible, closing, pos, size, zIndex, dockOffset, onClos
         <span className="window-dot green" />
         <span className="window-title">{title}</span>
       </div>
-      <div className="window-body">{children}</div>
+      <div className={`window-body${scrollable ? '' : ' no-scroll'}`}>{children}</div>
     </div>
   )
 }

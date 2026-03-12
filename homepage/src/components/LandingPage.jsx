@@ -3,6 +3,7 @@ import './LandingPage.css'
 import Window from './Window'
 import DesktopWidget from './DesktopWidget'
 import AboutPage from './AboutPage'
+import LinksPage from './LinksPage'
 
 const lines = [
   [{ text: 'Welcome to https://sam-thomas.dev' }],
@@ -96,7 +97,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     height: window.innerHeight * 0.5,
   }))
   const aboutSize = { width: Math.min(720, window.innerWidth * 0.9), height: Math.min(680, window.innerHeight * 0.88) }
-  const linksSize = { width: Math.min(480, window.innerWidth * 0.9), height: Math.min(300, window.innerHeight * 0.7) }
+  const linksSize = { width: Math.min(480, window.innerWidth * 0.9), height: Math.min(280, window.innerHeight * 0.7) }
 
   // Refs
   const inputRef = useRef(null)
@@ -660,19 +661,9 @@ function LandingPage({ initialWindow = 'terminal' }) {
         onPosChange={setLinksPos}
         onInteract={() => bringToFront('links')}
         onAnimationEnd={handleLinksAnimationEnd}
+        scrollable={false}
       >
-        <div className="links-body">
-          {LINKS.map(link => (
-            <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="link-card">
-              <span className="link-card-icon">{link.icon}</span>
-              <div className="link-card-text">
-                <span className="link-card-label">{link.label}</span>
-                <span className="link-card-description">{link.description}</span>
-              </div>
-              <span className="link-card-arrow">→</span>
-            </a>
-          ))}
-        </div>
+        <LinksPage />
       </Window>
     </main>
   )

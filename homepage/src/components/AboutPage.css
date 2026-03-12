@@ -28,6 +28,7 @@
   max-width: 860px;
   margin: 0 auto 48px;
   padding: 0 24px;
+  overflow: hidden;
 }
 
 .picker-track {
@@ -60,8 +61,8 @@
   background: transparent;
   border: none;
   color: #8fadc8;
-  font-size: 0.9rem;
-  padding: 8px 28px;
+  font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+  padding: clamp(6px, 1.5vw, 8px) clamp(10px, 3vw, 28px);
   cursor: pointer;
   border-radius: 26px;
   transition: color 0.2s;
