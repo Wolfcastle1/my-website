@@ -6,82 +6,76 @@ const TRANSITION_MS = 1000
 
 const contexts = {
   Personal: {
-    bio: 'Outside of work and sport I enjoy exploring new technologies, gaming, and spending time outdoors. I value creativity, curiosity, and finding the balance between ambition and rest.',
+    bio: 'Outside of work and sport I enjoy building things for the web, watching the NBA, and exploring indie games. I find that each of these keeps me curious in different ways — whether it\'s a clever mechanic in a small game or a last-second buzzer beater.',
     skillsTitle: 'Interests',
-    skills: ['Gaming', 'Hiking', 'Photography', 'Cooking', 'Music', 'Reading', 'Travel', 'Open Source'],
+    skills: ['Independent Web Dev', 'Basketball', 'NBA', 'Indie Games', 'Long Distance Running', 'Swimming'],
     timelineTitle: 'Highlights',
     timeline: [
       {
-        period: '2023',
-        title: 'Personal Project',
-        organisation: 'Side Project',
-        description: 'Built and shipped a personal project you are proud of.',
+        period: '2026',
+        title: 'Chicago Marathon',
+        organisation: 'Bank of America Chicago Marathon',
+        description: 'Registered and training for the 2026 Chicago Marathon — 26.2 miles through the city I call home.',
       },
       {
-        period: '2021',
-        title: 'Milestone',
-        organisation: 'Personal',
-        description: 'A meaningful personal milestone or life event.',
+        period: '2025',
+        title: 'LIFETIME Chicago Half Marathon',
+        organisation: 'LIFETIME',
+        description: 'Ran my first official race — the LIFETIME Chicago Half Marathon. A milestone that sparked the push toward the full 26.2.',
       },
       {
-        period: '2018',
-        title: 'Another Highlight',
-        organisation: 'Personal',
-        description: 'Another meaningful personal achievement or experience.',
+        period: '2025',
+        title: 'This Website',
+        organisation: 'Personal Project',
+        description: 'Designed and built a Mac desktop–style portfolio site with a React frontend, Go backend, and Postgres database.',
       },
     ],
   },
 
   Athletic: {
-    bio: 'Sport has always been a big part of my life. Competing has taught me discipline, resilience, and the value of pushing through when things get hard — lessons I carry into everything I do.',
+    bio: 'Sport has always been a core part of who I am. I competed in swimming and water polo through high school, and now I\'m channeling that competitive drive into long distance running.',
     skillsTitle: 'Sports & Activities',
-    skills: ['Basketball', 'Football', 'Running', 'Strength Training', 'Swimming', 'Cycling'],
-    timelineTitle: 'Athletic Career',
+    skills: ['Long Distance Running', 'Swimming', 'Water Polo', 'Basketball', 'Strength Training'],
+    timelineTitle: 'Athletic Timeline',
     timeline: [
       {
-        period: '2022 – Present',
-        title: 'Your Sport',
-        organisation: 'Your Team / Club',
-        description: 'Describe your current athletic involvement and any achievements.',
+        period: '2026',
+        title: 'Chicago Marathon',
+        organisation: 'Bank of America Chicago Marathon',
+        description: 'Training for the full 26.2 miles. The Bank of America Chicago Marathon is one of the six World Marathon Majors.',
       },
       {
-        period: '2018 – 2022',
-        title: 'Your Sport',
-        organisation: 'Previous Team / Club',
-        description: 'Describe a previous athletic chapter and what you accomplished.',
+        period: '2025',
+        title: 'LIFETIME Chicago Half Marathon',
+        organisation: 'LIFETIME',
+        description: 'Completed my first half marathon — 13.1 miles through Chicago. First race, not the last.',
       },
       {
-        period: '2014 – 2018',
-        title: 'Your Sport',
-        organisation: 'School / Academy',
-        description: 'Early competitive experience and formative athletic years.',
+        period: '2017 – 2021',
+        title: 'Competitive Swimming & Water Polo',
+        organisation: 'High School',
+        description: 'Competed at the high school level in both swimming and water polo. These sports built the foundation of discipline and team-first mentality I carry today.',
       },
     ],
   },
 
   Professional: {
-    bio: 'Software engineer based in Chicago, Illinois. I enjoy working on a team, solving problems, and building tools.',
+    bio: 'Full stack software engineer based in Chicago, Illinois. I build web applications end-to-end and care deeply about clean, maintainable code and good user experiences.',
     skillsTitle: 'Technical Skills',
-    skills: ['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Node.js', 'Git', 'REST APIs'], // TODO: update with your actual skills
+    skills: ['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Node.js', 'Git', 'REST APIs', 'TypeScript', 'SQL'],
     timelineTitle: 'Experience & Education',
     timeline: [
       {
-        period: '2021 – Present', // TODO: confirm exact start date at JPMorganChase
-        title: 'Software Engineer', // TODO: add your exact job title
-        organisation: 'JPMorganChase',
-        description: 'TODO: describe your role and what you work on day-to-day.',
-      },
-      {
-        period: 'TODO', // TODO: add any roles between NIU and JPMorganChase
-        title: 'TODO',
-        organisation: 'TODO',
-        description: 'TODO: add any previous roles here.',
+        period: '2021 – Present',
+        title: 'Software Engineer',
+        organisation: 'JPMorgan Chase',
+        description: 'Full stack developer on JPMorgan Access — a commercial banking platform. Work across the frontend and backend to build and maintain features used by business clients worldwide.',
       },
       {
         period: '2017 – 2021',
-        title: 'BSc Computer Science', // TODO: confirm your exact degree name
+        title: 'BS Computer Science, Minor in Mathematics',
         organisation: 'Northern Illinois University',
-        description: 'TODO: add details about your degree and any notable projects or achievements.',
+        description: 'Studied computer science with a mathematics minor. Built a foundation in algorithms, data structures, software engineering, and quantitative reasoning.',
       },
     ],
   },

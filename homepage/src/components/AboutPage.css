@@ -15,8 +15,10 @@
 }
 
 .about-page {
-  margin-top: 60px;
-  padding-top: 60px;
+  margin-top: 0;
+  padding-top: 0;
+  background: #0f172a;
+  flex: 1;
 }
 
 /* ── Context picker ────────────────────────────────── */

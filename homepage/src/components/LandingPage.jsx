@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import './LandingPage.css'
 import Window from './Window'
 import DesktopWidget from './DesktopWidget'
+import AboutPage from './AboutPage'
 
 const lines = [
   [{ text: 'Welcome to https://sam-thomas.dev' }],
@@ -94,7 +95,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     width:  Math.min(720, window.innerWidth * 0.9),
     height: window.innerHeight * 0.5,
   }))
-  const aboutSize = { width: Math.min(620, window.innerWidth * 0.9), height: Math.min(520, window.innerHeight * 0.85) }
+  const aboutSize = { width: Math.min(720, window.innerWidth * 0.9), height: Math.min(680, window.innerHeight * 0.88) }
   const linksSize = { width: Math.min(480, window.innerWidth * 0.9), height: Math.min(300, window.innerHeight * 0.7) }
 
   // Refs
@@ -643,35 +644,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
         onInteract={() => bringToFront('about')}
         onAnimationEnd={handleAboutAnimationEnd}
       >
-        <div className="about-body">
-          <div className="about-hero">
-            <div className="about-avatar">ST</div>
-            <div className="about-intro">
-              <h2 className="about-name">Sam Thomas</h2>
-              <p className="about-tagline">Software Developer</p>
-            </div>
-          </div>
-          <p className="about-bio">
-            A software developer who enjoys building full-stack web applications across the whole stack —
-            clean UIs in React, efficient Go backends, and PostgreSQL schemas that scale.
-          </p>
-          <h3 className="about-section-title">Skills</h3>
-          <div className="about-skills">
-            {['JavaScript', 'React', 'Go', 'PostgreSQL', 'HTML / CSS', 'Git'].map(s => (
-              <span key={s} className="about-skill-badge">{s}</span>
-            ))}
-          </div>
-          <h3 className="about-section-title">Experience</h3>
-          <div className="about-timeline">
-            <div className="about-timeline-item">
-              <span className="about-timeline-period">2024 – Present</span>
-              <div>
-                <strong>Software Engineer</strong>
-                <p>Your Company</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AboutPage />
       </Window>
 
       {/* Links window */}
