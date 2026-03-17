@@ -77,7 +77,21 @@ body.dragging-icon * {
 
 /* Terminal body */
 .terminal-body {
-  background: #1a1a1a;
+  --term-bg:          #1a1a1a;
+  --term-base:        #e0e0e0;
+  --term-prompt:      #4ec9b0;
+  --term-link:        #569cd6;
+  --term-link-hover:  #9cdcfe;
+  --term-error:       #f44747;
+  --term-error-msg:   #ce9178;
+  --term-warning:     #f5a623;
+  --term-advice:      #7dd3fc;
+  --term-success:     #4caf50;
+  --term-purple:      #c792ea;
+  --term-pink:        #f07178;
+  --term-dim:         #6b7280;
+
+  background: var(--term-bg);
   padding: 28px 28px 32px;
   flex: 1;
   overflow-y: auto;
@@ -89,7 +103,7 @@ body.dragging-icon * {
 }
 
 .terminal-body::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--term-bg);
 }
 
 .terminal-body::-webkit-scrollbar-thumb {
@@ -102,7 +116,7 @@ body.dragging-icon * {
 }
 
 .terminal-line {
-  color: #e0e0e0;
+  color: var(--term-base);
   font-size: 1.1rem;
   line-height: 1.9;
   white-space: pre-wrap;
@@ -110,40 +124,72 @@ body.dragging-icon * {
 }
 
 .terminal-prompt {
-  color: #4ec9b0;
+  color: var(--term-prompt);
   user-select: none;
 }
 
+.terminal-highlight {
+  color: var(--term-prompt);
+}
+
 .terminal-link {
-  color: #569cd6;
+  color: var(--term-link);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .terminal-link:hover {
-  color: #9cdcfe;
+  color: var(--term-link-hover);
 }
 
 .terminal-error-code {
-  color: #f44747;
+  color: var(--term-error);
   font-weight: bold;
 }
 
 .terminal-error-msg {
-  color: #ce9178;
+  color: var(--term-error-msg);
 }
 
 .terminal-warning {
-  color: #f5a623;
+  color: var(--term-warning);
 }
 
 .terminal-advice {
-  color: #7dd3fc;
+  color: var(--term-advice);
+}
+
+.terminal-success {
+  color: var(--term-success);
+}
+
+.terminal-purple {
+  color: var(--term-purple);
+}
+
+.terminal-pink {
+  color: var(--term-pink);
+}
+
+.terminal-dim {
+  color: var(--term-dim);
+}
+
+.terminal-base {
+  color: var(--term-base);
+}
+
+.terminal-bold {
+  font-weight: bold;
+}
+
+.terminal-italic {
+  font-style: italic;
 }
 
 .terminal-cursor {
   display: inline-block;
-  color: #e0e0e0;
+  color: var(--term-base);
   animation: blink 1s step-end infinite;
   line-height: 1;
 }
@@ -168,7 +214,7 @@ body.dragging-icon * {
 
 .terminal-input-mirror {
   white-space: pre;
-  color: #e0e0e0;
+  color: var(--term-base);
 }
 
 .terminal-input-hidden {
