@@ -185,12 +185,13 @@ function LandingPage({ initialWindow = 'terminal' }) {
   // Terminal handlers
   const handleTerminalOpen = () => {
     if (dragMoved.current) { dragMoved.current = false; return }
-    if (terminalVisible) return
+    if (terminalVisible) { bringToFront('terminal'); return }
     computeDockOffset(dockIconRef, terminalDockOffset)
     setTerminalPos(getOpenPos(terminalSize))
     setTerminalActive(false)
     terminalContentRef.current?.reset()
     setTerminalVisible(true)
+    bringToFront('terminal')
   }
   const handleTerminalClose = () => {
     if (terminalClosing) return
@@ -209,6 +210,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     computeDockOffset(aboutIconRef, aboutDockOffset)
     setAboutPos(getOpenPos(aboutSize))
     setAboutVisible(true)
+    bringToFront('about')
   }
   const handleAboutClose = () => {
     if (aboutClosing) return
@@ -226,6 +228,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     computeDockOffset(linksIconRef, linksDockOffset)
     setLinksPos(getOpenPos(linksSize))
     setLinksVisible(true)
+    bringToFront('links')
   }
   const handleLinksClose = () => {
     if (linksClosing) return
