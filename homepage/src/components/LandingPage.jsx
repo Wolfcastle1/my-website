@@ -41,9 +41,10 @@ function LandingPage({ initialWindow = 'terminal' }) {
 
   // Refs
   const terminalContentRef = useRef(null)
-  const dockIconRef  = useRef(null)
-  const aboutIconRef = useRef(null)
-  const linksIconRef = useRef(null)
+  const dockIconRef    = useRef(null)
+  const aboutIconRef   = useRef(null)
+  const linksIconRef   = useRef(null)
+  const resumeIconRef  = useRef(null)
   const terminalDockOffset = useRef({ x: 0, y: 0 })
   const aboutDockOffset    = useRef({ x: 0, y: 0 })
   const linksDockOffset    = useRef({ x: 0, y: 0 })
@@ -82,13 +83,14 @@ function LandingPage({ initialWindow = 'terminal' }) {
     const iconW = 80
     const iconH = 90
     const bPad  = 16
-    const gap   = Math.max(20, (vw - 3 * iconW) / 4)
+    const gap   = Math.max(16, (vw - 4 * iconW) / 5)
     const iconY = vh - iconH - bPad
     setIconPositions({
       widget:   { x: vw - 180,                       y: 20      },
       about:    { x: gap,                             y: iconY   },
       terminal: { x: gap * 2 + iconW,                y: iconY   },
       links:    { x: gap * 3 + iconW * 2,             y: iconY   },
+      resume:   { x: gap * 4 + iconW * 3,             y: iconY   },
     })
   }, [])
 
@@ -112,6 +114,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
           links:    clamp(prev.links,    linksIconRef),
           terminal: clamp(prev.terminal, dockIconRef),
           widget:   clamp(prev.widget,   widgetRef),
+          resume:   clamp(prev.resume,   resumeIconRef),
         }
       })
     }
@@ -239,6 +242,15 @@ function LandingPage({ initialWindow = 'terminal' }) {
     if (linksClosing) { setLinksVisible(false); setLinksClosing(false) }
   }
 
+  // Resume handler
+  const handleResumeDownload = () => {
+    if (dragMoved.current) { dragMoved.current = false; return }
+    const a = document.createElement('a')
+    a.href = '/resume.pdf'
+    a.download = 'Sam_Thomas_resume.pdf'
+    a.click()
+  }
+
   const handleTerminalAction = (action) => {
     if (action === 'about') handleAboutOpen()
     else if (action === 'links') handleLinksOpen()
@@ -284,6 +296,18 @@ function LandingPage({ initialWindow = 'terminal' }) {
           >
             <span className="desktop-icon-emoji">💻</span>
             <span className="desktop-icon-label">Terminal</span>
+          </button>
+
+          <button
+            ref={resumeIconRef}
+            className="desktop-icon"
+            style={{ position: 'absolute', left: iconPositions.resume.x, top: iconPositions.resume.y }}
+            onMouseDown={e => handleIconMouseDown(e, 'resume')}
+            onTouchStart={e => handleIconTouchStart(e, 'resume')}
+            onClick={handleResumeDownload}
+          >
+            <span className="desktop-icon-emoji">📄</span>
+            <span className="desktop-icon-label">Resume</span>
           </button>
 
           <DesktopWidget
