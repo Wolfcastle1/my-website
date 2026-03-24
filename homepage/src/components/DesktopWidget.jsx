@@ -5,11 +5,19 @@ function getTimeString() {
   return new Date().toLocaleTimeString('en-US', { hour12: true })
 }
 
+function getDateString() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
 const DesktopWidget = forwardRef(function DesktopWidget({ style, onMouseDown }, ref) {
   const [clockTime, setClockTime] = useState(getTimeString)
+  const [clockDate, setClockDate] = useState(getDateString)
 
   useEffect(() => {
-    const interval = setInterval(() => setClockTime(getTimeString()), 1000)
+    const interval = setInterval(() => {
+      setClockTime(getTimeString())
+      setClockDate(getDateString())
+    }, 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -40,6 +48,7 @@ const DesktopWidget = forwardRef(function DesktopWidget({ style, onMouseDown }, 
       style={style}
       onMouseDown={handleMouseDown}
     >
+      <span className="widget-date">{clockDate}</span>
       <span className="widget-clock">{clockTime}</span>
     </div>
   )
