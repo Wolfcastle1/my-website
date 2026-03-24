@@ -196,12 +196,12 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
       }
       case 'contact':
         responseLines = [
+          [{ text: 'Email     ', className: 'terminal-highlight' }],
+          [{ text: '  →  thomas.samuel415@outlook.com', className: 'terminal-advice' }],
           [{ text: 'GitHub    ', className: 'terminal-highlight' }],
           [{ text: '  →  github.com/Wolfcastle1', className: 'terminal-advice' }],
           [{ text: 'LinkedIn  ', className: 'terminal-highlight' }],
           [{ text: '  →  linkedin.com/in/samuel-thomas-464076163', className: 'terminal-advice' }],
-          [{ text: 'Email     ', className: 'terminal-highlight' }],
-          [{ text: '  →  thomas.samuel415@outlook.com', className: 'terminal-advice' }],
         ]
         break
       case 'about':
@@ -293,6 +293,7 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
             {inputFocused && <span className="terminal-cursor">▋</span>}
             <input
               ref={inputRef}
+              type="search"
               className="terminal-input-hidden"
               value={userInput}
               onChange={e => setUserInput(e.target.value)}

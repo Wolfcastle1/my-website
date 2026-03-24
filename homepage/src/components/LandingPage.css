@@ -231,6 +231,11 @@ body.dragging-icon * {
   height: 100%;
 }
 
+.terminal-input-hidden::-webkit-search-cancel-button,
+.terminal-input-hidden::-webkit-search-decoration {
+  display: none;
+}
+
 /* About window */
 .about-body {
   flex: 1;
