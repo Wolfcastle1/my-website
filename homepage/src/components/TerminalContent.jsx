@@ -8,8 +8,8 @@ const INTRO_LINES = [
   [{ text: 'Also... This terminal has some cool features!', className: 'terminal-advice' }], 
   [{ text: 'Try out: ', className: 'terminal-highlight' }],
   [{ text: ' whoami', className: 'terminal-advice' }],
-  [{ text: ' skills', className: 'terminal-advice' }],
   [{ text: ' contact', className: 'terminal-advice' }],
+  [{ text: ' resume', className: 'terminal-advice' }],
 ]
 
 const ERROR_MESSAGES = [
@@ -137,7 +137,10 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
   }, [showInput])
 
   const handleSubmit = () => {
-    if (!userInput.trim()) return
+    if (!userInput.trim()) {
+      setExchanges(prev => [...prev, { cmd: '', lines: [] }])
+      return
+    }
     const cmd = userInput.trim().toLowerCase()
 
     const history = commandHistoryRef.current
@@ -155,24 +158,21 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
     switch (cmd) {
       case 'ls':
         responseLines = [
-          [{ text: ' passwords.txt', className: 'terminal-advice' }],
-          [{ text: 'wait...', className: 'terminal-warning' }],
-          [{ text: 'security breach detected... initiating self-destruct sequence...', className: 'terminal-error-msg' }],
-          [{ text: '3...', className: 'terminal-error-code' }],
-          [{ text: '2...', className: 'terminal-error-code' }],
-          [{ text: '1...', className: 'terminal-error-code' }],
-          [{ text: 'just kidding ;)', className: 'terminal-advice' }],
+          [{ text: 'about.exe', className: 'terminal-advice' }],
+          [{ text: 'links.exe', className: 'terminal-advice' }],
+          [{ text: 'terminal.exe', className: 'terminal-advice' }],
+          [{ text: 'Sam_Thomas_resume.pdf', className: 'terminal-highlight' }],
         ]
         break
       case 'help':
         responseLines = [
           [{ text: 'available commands:', className: 'terminal-highlight' }],
           [{ text: '  whoami   — learn more about me', className: 'terminal-advice' }],
-          [{ text: '  skills   — see the tools I am comfortable with', className: 'terminal-advice' }],
           [{ text: '  contact  — find me online', className: 'terminal-advice' }],
+          [{ text: '  resume   — download my resume', className: 'terminal-advice' }],
           [{ text: '  about    — open the About Me window', className: 'terminal-advice' }],
           [{ text: '  links    — open the Links window', className: 'terminal-advice' }],
-          [{ text: '  ls       — list files (proceed with caution)', className: 'terminal-warning' }],
+          [{ text: '  ls       — list files', className: 'terminal-advice' }],
           [{ text: '  clear    — clear the terminal', className: 'terminal-advice' }],
         ]
         break
@@ -184,24 +184,24 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
           [{ text: 'Computer Science ·  Northern Illinois University · 2017 - 2021', className: 'terminal-advice' }],
         ]
         break
-      case 'skills':
+      case 'resume': {
+        const a = document.createElement('a')
+        a.href = '/resume.pdf'
+        a.download = 'Sam_Thomas_resume.pdf'
+        a.click()
         responseLines = [
-          [{ text: 'Languages & Frameworks', className: 'terminal-highlight' }],
-          [{ text: '  Java', className: 'terminal-advice' }],
-          [{ text: '  SpringBoot', className: 'terminal-advice' }],
-          [{ text: '  React', className: 'terminal-advice' }],
-          [{ text: 'Databases', className: 'terminal-highlight' }],
-          [{ text: '  Oracle', className: 'terminal-advice' }],
-          [{ text: '  MongoDB', className: 'terminal-advice' }],
-          [{ text: '  PostgreSQL', className: 'terminal-advice' }],
+          [{ text: 'Downloading Sam_Thomas_resume.pdf...', className: 'terminal-highlight' }],
         ]
         break
+      }
       case 'contact':
         responseLines = [
           [{ text: 'GitHub    ', className: 'terminal-highlight' }],
           [{ text: '  →  github.com/Wolfcastle1', className: 'terminal-advice' }],
           [{ text: 'LinkedIn  ', className: 'terminal-highlight' }],
           [{ text: '  →  linkedin.com/in/samuel-thomas-464076163', className: 'terminal-advice' }],
+          [{ text: 'Email     ', className: 'terminal-highlight' }],
+          [{ text: '  →  thomas.samuel415@outlook.com', className: 'terminal-advice' }],
         ]
         break
       case 'about':
@@ -227,8 +227,13 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
     setUserInput('')
   }
 
+  const handleBodyClick = () => {
+    if (window.getSelection()?.toString()) return
+    inputRef.current?.focus()
+  }
+
   return (
-    <div className="terminal-body" ref={bodyRef} onClick={() => inputRef.current?.focus()}>
+    <div className="terminal-body" ref={bodyRef} onClick={handleBodyClick}>
       {!cleared && INTRO_LINES.map((line, lineIdx) => {
         if (lineIdx > currentLine) return null
         const isCompleted = completedLines.includes(lineIdx)
@@ -280,7 +285,7 @@ const TerminalContent = forwardRef(function TerminalContent({ active, onAction }
       {showInput && (
         <div
           className="terminal-line terminal-input-line"
-          onClick={() => inputRef.current?.focus()}
+          onClick={handleBodyClick}
         >
           <span className="terminal-prompt">$ </span>
           <div className="terminal-input-wrapper">
