@@ -5,6 +5,7 @@ import DesktopWidget from './DesktopWidget'
 import AboutPage from './AboutPage'
 import LinksPage from './LinksPage'
 import TerminalContent from './TerminalContent'
+import BackgroundCanvas from './BackgroundCanvas'
 
 const LINKS = [
   { id: 'linkedin', label: 'LinkedIn', description: 'Connect with me professionally', url: 'https://www.linkedin.com/in/samuel-thomas-464076163/', icon: '💼' },
@@ -256,10 +257,9 @@ function LandingPage({ initialWindow = 'terminal' }) {
     else if (action === 'links') handleLinksOpen()
   }
 
-  const rainbowAngle = Math.atan2(window.innerHeight, window.innerWidth) * (180 / Math.PI)
-
   return (
-    <main className="landing-page" style={{ '--rainbow-angle': `${rainbowAngle}deg` }}>
+    <main className="landing-page">
+      <BackgroundCanvas />
       {iconPositions && (
         <>
           <button

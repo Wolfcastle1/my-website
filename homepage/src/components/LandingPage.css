@@ -7,25 +7,6 @@
   min-height: 100vh;
 }
 
-.landing-page::before {
-  content: '';
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 200vmax;
-  height: 16vh;
-  transform: translate(-50%, -50%) rotate(var(--rainbow-angle, 45deg));
-  height: 16vh;
-  background: linear-gradient(
-    to bottom,
-    #e03030 0,    #e03030 25%,
-    #e8c000 25%,  #e8c000 50%,
-    #27a844 50%,  #27a844 75%,
-    #1a6fd4 75%,  #1a6fd4 100%
-  );
-  pointer-events: none;
-  z-index: 0;
-}
 
 /* Desktop icons */
 .desktop-icon {
