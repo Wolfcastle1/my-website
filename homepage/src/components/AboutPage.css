@@ -259,20 +259,19 @@
     column-gap: 12px;
   }
 
-  .tl-row > .tl-slot:first-child {
-    display: none;
+  .tl-center {
+    grid-column: 1;
+    grid-row: 1;
   }
 
-  .tl-row > .tl-slot:last-child,
-  .tl-row > .tl-slot:first-child {
+  .tl-row > .tl-slot:first-child,
+  .tl-row > .tl-slot:last-child {
+    grid-column: 2;
+    grid-row: 1;
     justify-content: flex-start;
   }
 
   .tl-card {
     max-width: 100%;
-  }
-
-  .tl-center {
-    order: -1;
   }
 }
