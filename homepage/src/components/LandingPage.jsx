@@ -86,7 +86,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     const gap   = Math.max(16, (vw - 4 * iconW) / 5)
     const iconY = vh - iconH - bPad
     setIconPositions({
-      widget:   { x: vw - 180,                       y: 20      },
+      widget:   { x: vw - 206,                       y: 20      },
       about:    { x: gap,                             y: iconY   },
       terminal: { x: gap * 2 + iconW,                y: iconY   },
       links:    { x: gap * 3 + iconW * 2,             y: iconY   },
