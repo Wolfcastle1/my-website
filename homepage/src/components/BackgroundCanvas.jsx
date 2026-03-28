@@ -7,10 +7,17 @@ const STRIPES = [
   { color: '#1a6fd4' },
 ]
 
-const WAVELENGTH   = 320    // px — width of one full cycle
-const WAVE_TRAVEL  = 3000   // ms — time for the packet to cross the stripe
-const MIN_INTERVAL = 1000   // ms between waves
+const WAVELENGTH   = 320   // px — width of one full cycle
+const WAVE_TRAVEL  = 3000  // ms — base time for a packet to cross
+const MIN_INTERVAL = 1000  // ms between waves
 const MAX_INTERVAL = 2000
+
+// Animation types:
+//   'single' — one full-cycle wave packet traveling in a random direction
+//   'half'   — one half-period bump (arch) traveling in a random direction
+//   'cross'  — two full-cycle packets from opposite ends crossing each other
+//   'fast'   — single full-cycle packet at 3× speed
+const ANIM_TYPES = ['single', 'half', 'cross', 'fast']
 
 export default function BackgroundCanvas() {
   const canvasRef = useRef(null)
@@ -19,13 +26,13 @@ export default function BackgroundCanvas() {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
 
-    let waveStripe    = -1
-    let waveDirection = 1
-    let waveProgress  = 0   // 0 → 1 as packet travels across
-    let waveActive    = false
-    let lastTime      = null
-    let scheduled     = null
-    let rafId         = null
+    // Each packet: { progress: 0..1, direction: ±1, style: 'full'|'half', speed: number }
+    let wavePackets = []
+    let waveStripe  = -1
+    let waveActive  = false
+    let lastTime    = null
+    let scheduled   = null
+    let rafId       = null
 
     const resize = () => {
       canvas.width  = window.innerWidth
@@ -37,15 +44,30 @@ export default function BackgroundCanvas() {
     const scheduleNext = () => {
       const delay = MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL)
       scheduled = setTimeout(() => {
-        waveStripe    = Math.floor(Math.random() * STRIPES.length)
-        waveDirection = Math.random() < 0.5 ? 1 : -1
-        waveProgress  = 0
-        waveActive    = true
+        const type = ANIM_TYPES[Math.floor(Math.random() * ANIM_TYPES.length)]
+        const dir  = Math.random() < 0.5 ? 1 : -1
+        waveStripe = Math.floor(Math.random() * STRIPES.length)
+
+        if (type === 'cross') {
+          wavePackets = [
+            { progress: 0, direction:  1, style: 'full', speed: 1 },
+            { progress: 0, direction: -1, style: 'full', speed: 1 },
+          ]
+        } else {
+          wavePackets = [{
+            progress:  0,
+            direction: dir,
+            style:     type === 'half' ? 'half' : 'full',
+            speed:     type === 'fast' ? 3 : 1,
+          }]
+        }
+
+        waveActive = true
       }, delay)
     }
     scheduleNext()
 
-    const drawStripe = (stripeIdx, waveCenter) => {
+    const drawStripe = (stripeIdx, centers) => {
       const vw = canvas.width
       const vh = canvas.height
       const bandH   = vh * 0.16
@@ -58,7 +80,7 @@ export default function BackgroundCanvas() {
 
       ctx.fillStyle = STRIPES[stripeIdx].color
 
-      if (waveCenter === null) {
+      if (!centers || centers.length === 0) {
         ctx.fillRect(-halfW, yTop, halfW * 2, stripeH)
         return
       }
@@ -66,29 +88,34 @@ export default function BackgroundCanvas() {
       const halfCycle = WAVELENGTH / 2
       const step = 3
 
-      ctx.beginPath()
-      // top edge left → right
-      for (let x = -halfW; x <= halfW; x += step) {
-        const dx = x - waveCenter
+      const displacement = (x) => {
         let disp = 0
-        if (Math.abs(dx) < halfCycle) {
-          // Hann window * sine: smooth single-cycle bump
-          const hann = 0.5 * (1 + Math.cos(Math.PI * dx / halfCycle))
-          disp = maxA * hann * Math.sin((2 * Math.PI * dx) / WAVELENGTH)
+        for (const { x: cx, style } of centers) {
+          const dx = x - cx
+          if (style === 'full') {
+            if (Math.abs(dx) < halfCycle) {
+              const hann = 0.5 * (1 + Math.cos(Math.PI * dx / halfCycle))
+              disp += maxA * hann * Math.sin((2 * Math.PI * dx) / WAVELENGTH)
+            }
+          } else {
+            // smooth bump (raised cosine) at half the length
+            const halfWindow = WAVELENGTH / 4
+            if (Math.abs(dx) < halfWindow) {
+              disp += maxA * 0.5 * (1 - Math.cos(Math.PI * (dx + halfWindow) / halfWindow))
+            }
+          }
         }
-        const y = yTop + disp
+        return disp
+      }
+
+      ctx.beginPath()
+      for (let x = -halfW; x <= halfW; x += step) {
+        const y = yTop + displacement(x)
         if (x === -halfW) ctx.moveTo(x, y)
         else              ctx.lineTo(x, y)
       }
-      // bottom edge right → left
       for (let x = halfW; x >= -halfW; x -= step) {
-        const dx = x - waveCenter
-        let disp = 0
-        if (Math.abs(dx) < halfCycle) {
-          const hann = 0.5 * (1 + Math.cos(Math.PI * dx / halfCycle))
-          disp = maxA * hann * Math.sin((2 * Math.PI * dx) / WAVELENGTH)
-        }
-        ctx.lineTo(x, yBottom + disp)
+        ctx.lineTo(x, yBottom + displacement(x))
       }
       ctx.closePath()
       ctx.fill()
@@ -108,27 +135,33 @@ export default function BackgroundCanvas() {
       ctx.translate(vw / 2, vh / 2)
       ctx.rotate(angle)
 
-      // Advance wave packet
-      let waveCenter = null
+      // Advance packets and compute their current centers
+      let centers = null
       if (waveActive) {
-        waveProgress += dt / (WAVE_TRAVEL / 1000)
-        if (waveProgress >= 1) {
+        const halfW = Math.max(vw, vh) * 1.5
+
+        for (const p of wavePackets) {
+          p.progress += (dt / (WAVE_TRAVEL / 1000)) * p.speed
+        }
+        wavePackets = wavePackets.filter(p => p.progress < 1)
+
+        if (wavePackets.length === 0) {
           waveActive = false
           waveStripe = -1
           scheduleNext()
         } else {
-          const halfW = Math.max(vw, vh) * 1.5
-          const startX = waveDirection > 0 ? -halfW - WAVELENGTH / 2 : halfW + WAVELENGTH / 2
-          const endX   = waveDirection > 0 ?  halfW + WAVELENGTH / 2 : -halfW - WAVELENGTH / 2
-          waveCenter = startX + (endX - startX) * waveProgress
+          centers = wavePackets.map(p => {
+            const startX = p.direction > 0 ? -halfW - WAVELENGTH / 2 :  halfW + WAVELENGTH / 2
+            const endX   = p.direction > 0 ?  halfW + WAVELENGTH / 2 : -halfW - WAVELENGTH / 2
+            return { x: startX + (endX - startX) * p.progress, style: p.style }
+          })
         }
       }
 
-      // Draw non-waving stripes first, then waving stripe on top
       for (let i = 0; i < STRIPES.length; i++) {
         if (i !== waveStripe) drawStripe(i, null)
       }
-      if (waveStripe >= 0) drawStripe(waveStripe, waveCenter)
+      if (waveStripe >= 0) drawStripe(waveStripe, centers)
 
       ctx.restore()
     }
