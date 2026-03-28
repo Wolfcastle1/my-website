@@ -35,8 +35,12 @@ export default function BackgroundCanvas() {
     let rafId       = null
 
     const resize = () => {
-      canvas.width  = window.innerWidth
-      canvas.height = window.innerHeight
+      const dpr = window.devicePixelRatio || 1
+      canvas.width  = window.innerWidth  * dpr
+      canvas.height = window.innerHeight * dpr
+      canvas.style.width  = window.innerWidth  + 'px'
+      canvas.style.height = window.innerHeight + 'px'
+      ctx.scale(dpr, dpr)
     }
     resize()
     window.addEventListener('resize', resize)
@@ -68,8 +72,8 @@ export default function BackgroundCanvas() {
     scheduleNext()
 
     const drawStripe = (stripeIdx, centers) => {
-      const vw = canvas.width
-      const vh = canvas.height
+      const vw = window.innerWidth
+      const vh = window.innerHeight
       const bandH   = vh * 0.16
       const stripeH = bandH / STRIPES.length
       const halfW   = Math.max(vw, vh) * 1.5
@@ -86,7 +90,7 @@ export default function BackgroundCanvas() {
       }
 
       const halfCycle = WAVELENGTH / 2
-      const step = 3
+      const step = 1
 
       const displacement = (x) => {
         let disp = 0
@@ -126,8 +130,8 @@ export default function BackgroundCanvas() {
       const dt = lastTime === null ? 0 : (ts - lastTime) / 1000
       lastTime = ts
 
-      const vw = canvas.width
-      const vh = canvas.height
+      const vw = window.innerWidth
+      const vh = window.innerHeight
       ctx.clearRect(0, 0, vw, vh)
 
       const angle = Math.atan2(vh, vw)
@@ -138,7 +142,7 @@ export default function BackgroundCanvas() {
       // Advance packets and compute their current centers
       let centers = null
       if (waveActive) {
-        const halfW = Math.max(vw, vh) * 1.5
+        const halfW = Math.max(window.innerWidth, window.innerHeight) * 1.5
 
         for (const p of wavePackets) {
           p.progress += (dt / (WAVE_TRAVEL / 1000)) * p.speed
