@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react'
 
 const STRIPES = [
-  { color: '#e03030' },
-  { color: '#e8c000' },
-  { color: '#27a844' },
-  { color: '#1a6fd4' },
+  { color: '#f0a500' }, // amber
+  { color: '#d4500a' }, // burnt orange
+  { color: '#6b1a1a' }, // dark red
+  { color: '#1a3a6e' }, // mid navy
 ]
 
 const WAVELENGTH   = 320   // px — width of one full cycle
