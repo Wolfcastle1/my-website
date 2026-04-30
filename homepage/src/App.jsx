@@ -5,7 +5,7 @@ function App() {
   const { pathname } = useLocation()
   const initialWindow = pathname === '/about' ? 'about'
                       : pathname === '/links'  ? 'links'
-                      : 'terminal'
+                      : null
   return <LandingPage initialWindow={initialWindow} />
 }
 

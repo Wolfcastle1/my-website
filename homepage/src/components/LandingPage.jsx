@@ -13,7 +13,7 @@ const LINKS = [
   { id: 'instagram',label: 'Instagram',description: 'Follow me on Instagram',          url: 'https://www.instagram.com/dummy_thicc_cavz', icon: '📸' },
 ]
 
-function LandingPage({ initialWindow = 'terminal' }) {
+function LandingPage({ initialWindow = null }) {
   const [terminalActive, setTerminalActive] = useState(false)
 
   // Window visibility states
@@ -123,7 +123,7 @@ function LandingPage({ initialWindow = 'terminal' }) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Auto-open initial window on load
+  // Auto-open initial window on load (only for deep-link routes)
   useEffect(() => {
     if (initialWindow === 'about') {
       computeDockOffset(aboutIconRef, aboutDockOffset)
@@ -133,10 +133,6 @@ function LandingPage({ initialWindow = 'terminal' }) {
       computeDockOffset(linksIconRef, linksDockOffset)
       setLinksPos(getOpenPos(linksSize))
       setLinksVisible(true)
-    } else {
-      computeDockOffset(dockIconRef, terminalDockOffset)
-      setTerminalPos(getOpenPos(terminalSize))
-      setTerminalVisible(true)
     }
   }, [])
 
