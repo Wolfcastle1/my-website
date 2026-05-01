@@ -2,11 +2,16 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { getNextLine } from '../../utils/getNextLine'
 import defaultWordList from '../../data/wordList'
 
-export function useTypingGame({ wordList = defaultWordList, transitionDuration = 350 } = {}) {
+export function useTypingGame({
+  wordList = defaultWordList,
+  transitionDuration = 350,
+  minChars = 38,
+  maxChars = 44,
+} = {}) {
   const [lines, setLines] = useState(() => [
-    getNextLine(wordList),
-    getNextLine(wordList),
-    getNextLine(wordList),
+    getNextLine(wordList, minChars, maxChars),
+    getNextLine(wordList, minChars, maxChars),
+    getNextLine(wordList, minChars, maxChars),
   ])
   const [typed, setTyped] = useState('')
   const [keystrokes, setKeystrokes] = useState({ correct: 0, total: 0 })
@@ -61,14 +66,14 @@ export function useTypingGame({ wordList = defaultWordList, transitionDuration =
       setTransitioning(true)
       setTimeout(() => {
         typedRef.current = ''
-        setLines(prev => [prev[1], prev[2], getNextLine(wordList)])
+        setLines(prev => [prev[1], prev[2], getNextLine(wordList, minChars, maxChars)])
         setTyped('')
         setTransitioning(false)
         setLineId(id => id + 1)
         transitioningRef.current = false
       }, transitionDuration)
     }
-  }, [active, wordList, transitionDuration])
+  }, [active, wordList, transitionDuration, minChars, maxChars])
 
   const elapsedMinutes = startTime ? (Date.now() - startTime) / 60000 : 0
   const wpm = elapsedMinutes > 0 ? (keystrokes.correct / 5) / elapsedMinutes : 0

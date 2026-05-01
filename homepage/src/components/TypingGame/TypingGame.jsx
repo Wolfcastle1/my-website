@@ -2,10 +2,25 @@ import { useEffect, useRef, useState } from 'react'
 import './TypingGame.css'
 import { useTypingGame } from './useTypingGame'
 
+// Mirrors the typing window sizing in LandingPage and the CSS clamps in
+// TypingGame.css so generated lines fit the visible stage on any viewport.
+function computeLineCharLimits() {
+  const vw = window.innerWidth
+  const winW = Math.min(720, vw * 0.9)
+  const pad = Math.min(28, Math.max(16, vw * 0.04))
+  const stageW = winW - 2 * pad
+  const fontSizePx = Math.min(22.4, Math.max(16, vw * 0.025))
+  // Monospace glyphs are ~0.6em wide; letter-spacing: 0.02em adds a little.
+  const charW = fontSizePx * 0.62
+  const max = Math.max(14, Math.min(44, Math.floor(stageW / charW) - 1))
+  return { maxChars: max, minChars: Math.max(8, max - 6) }
+}
+
 function TypingGame({ wordList, transitionDuration = 250 }) {
   const inputRef = useRef(null)
+  const [{ minChars, maxChars }, setLimits] = useState(computeLineCharLimits)
   const { active, upcoming, third, typed, transitioning, lineId, wpm, accuracy, started, handleKeyDown } =
-    useTypingGame({ wordList, transitionDuration })
+    useTypingGame({ wordList, transitionDuration, minChars, maxChars })
 
   const [isFocused, setIsFocused] = useState(false)
   const isTouchDevice = window.matchMedia('(pointer: coarse)').matches
@@ -15,6 +30,12 @@ function TypingGame({ wordList, transitionDuration = 250 }) {
       inputRef.current?.focus()
       setIsFocused(true)
     }
+  }, [])
+
+  useEffect(() => {
+    const onResize = () => setLimits(computeLineCharLimits())
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
   }, [])
 
   const focusInput = () => inputRef.current?.focus()
