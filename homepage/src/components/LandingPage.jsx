@@ -97,16 +97,35 @@ function LandingPage({ initialWindow = null }) {
     const iconW = 80
     const iconH = 90
     const bPad  = 16
-    const gap   = Math.max(12, (vw - 5 * iconW) / 6)
-    const iconY = vh - iconH - bPad
-    setIconPositions({
-      widget:   { x: vw - 206,                       y: 20      },
-      about:    { x: gap,                             y: iconY   },
-      terminal: { x: gap * 2 + iconW,                y: iconY   },
-      links:    { x: gap * 3 + iconW * 2,             y: iconY   },
-      typing:   { x: gap * 4 + iconW * 3,             y: iconY   },
-      resume:   { x: gap * 5 + iconW * 4,             y: iconY   },
-    })
+    const minGap = 12
+    const fitsOneRow = vw >= 5 * iconW + 6 * minGap
+    if (fitsOneRow) {
+      const gap = (vw - 5 * iconW) / 6
+      const iconY = vh - iconH - bPad
+      setIconPositions({
+        widget:   { x: vw - 206,             y: 20    },
+        about:    { x: gap,                  y: iconY },
+        terminal: { x: gap * 2 + iconW,      y: iconY },
+        links:    { x: gap * 3 + iconW * 2,  y: iconY },
+        typing:   { x: gap * 4 + iconW * 3,  y: iconY },
+        resume:   { x: gap * 5 + iconW * 4,  y: iconY },
+      })
+    } else {
+      // Two-row layout for narrow screens: 3 on top, 2 on bottom.
+      const topGap    = Math.max(minGap, (vw - 3 * iconW) / 4)
+      const bottomGap = Math.max(minGap, (vw - 2 * iconW) / 3)
+      const row2Y = vh - iconH - bPad
+      const row1Y = row2Y - iconH - 8
+      const widgetX = Math.max(8, vw - 206)
+      setIconPositions({
+        widget:   { x: widgetX,                          y: 20    },
+        about:    { x: topGap,                           y: row1Y },
+        terminal: { x: topGap * 2 + iconW,               y: row1Y },
+        links:    { x: topGap * 3 + iconW * 2,           y: row1Y },
+        typing:   { x: bottomGap,                        y: row2Y },
+        resume:   { x: bottomGap * 2 + iconW,            y: row2Y },
+      })
+    }
   }, [])
 
   // Clamp icon positions on resize
