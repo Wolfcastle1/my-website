@@ -5,6 +5,7 @@ import DesktopWidget from './DesktopWidget'
 import AboutPage from './AboutPage'
 import LinksPage from './LinksPage'
 import TerminalContent from './TerminalContent'
+import TypingGame from './TypingGame/TypingGame'
 import BackgroundCanvas from './BackgroundCanvas'
 
 const LINKS = [
@@ -29,7 +30,13 @@ function LandingPage({ initialWindow = null }) {
   const [linksClosing, setLinksClosing] = useState(false)
   const [linksPos, setLinksPos] = useState(null)
 
-  const [zIndexes, setZIndexes] = useState({ terminal: 10, about: 11, links: 12 })
+  const [typingVisible, setTypingVisible] = useState(false)
+  const [typingClosing, setTypingClosing] = useState(false)
+  const [typingPos, setTypingPos] = useState(null)
+  const typingPosRef = useRef(null)
+  const typingVisibleRef = useRef(false)
+
+  const [zIndexes, setZIndexes] = useState({ terminal: 10, about: 11, links: 12, typing: 13 })
   const [iconPositions, setIconPositions] = useState(null)
 
   const isMobile = window.innerWidth < 600
@@ -39,16 +46,22 @@ function LandingPage({ initialWindow = null }) {
   }))
   const aboutSize = { width: Math.min(720, window.innerWidth * 0.9), height: Math.min(680, window.innerHeight * 0.88) }
   const linksSize = { width: Math.min(480, window.innerWidth * 0.9), height: Math.min(280, window.innerHeight * 0.7) }
+  const typingSize = {
+    width: Math.min(720, window.innerWidth * 0.9),
+    height: Math.min(420, Math.max(300, window.innerHeight * 0.85)),
+  }
 
   // Refs
   const terminalContentRef = useRef(null)
   const dockIconRef    = useRef(null)
   const aboutIconRef   = useRef(null)
   const linksIconRef   = useRef(null)
+  const typingIconRef  = useRef(null)
   const resumeIconRef  = useRef(null)
   const terminalDockOffset = useRef({ x: 0, y: 0 })
   const aboutDockOffset    = useRef({ x: 0, y: 0 })
   const linksDockOffset    = useRef({ x: 0, y: 0 })
+  const typingDockOffset   = useRef({ x: 0, y: 0 })
   const widgetRef          = useRef(null)
   const dragMoved = useRef(false)
 
@@ -84,14 +97,15 @@ function LandingPage({ initialWindow = null }) {
     const iconW = 80
     const iconH = 90
     const bPad  = 16
-    const gap   = Math.max(16, (vw - 4 * iconW) / 5)
+    const gap   = Math.max(12, (vw - 5 * iconW) / 6)
     const iconY = vh - iconH - bPad
     setIconPositions({
       widget:   { x: vw - 206,                       y: 20      },
       about:    { x: gap,                             y: iconY   },
       terminal: { x: gap * 2 + iconW,                y: iconY   },
       links:    { x: gap * 3 + iconW * 2,             y: iconY   },
-      resume:   { x: gap * 4 + iconW * 3,             y: iconY   },
+      typing:   { x: gap * 4 + iconW * 3,             y: iconY   },
+      resume:   { x: gap * 5 + iconW * 4,             y: iconY   },
     })
   }, [])
 
@@ -114,6 +128,7 @@ function LandingPage({ initialWindow = null }) {
           about:    clamp(prev.about,    aboutIconRef),
           links:    clamp(prev.links,    linksIconRef),
           terminal: clamp(prev.terminal, dockIconRef),
+          typing:   clamp(prev.typing,   typingIconRef),
           widget:   clamp(prev.widget,   widgetRef),
           resume:   clamp(prev.resume,   resumeIconRef),
         }
@@ -121,6 +136,36 @@ function LandingPage({ initialWindow = null }) {
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  // Keep refs in sync with state so the visualViewport effect can read current values without re-registering
+  useEffect(() => { typingPosRef.current = typingPos }, [typingPos])
+  useEffect(() => { typingVisibleRef.current = typingVisible }, [typingVisible])
+
+  // Shift typing window up when mobile soft keyboard opens so content stays visible
+  useEffect(() => {
+    if (!window.visualViewport) return
+    const vv = window.visualViewport
+    let preKeyboardY = null
+
+    const handleVVResize = () => {
+      const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop
+      const keyboardOpen = keyboardHeight > 100
+      if (!typingVisibleRef.current) return
+
+      if (keyboardOpen) {
+        if (preKeyboardY === null) {
+          preKeyboardY = typingPosRef.current?.y ?? getOpenPos(typingSize).y
+        }
+        setTypingPos(prev => ({ ...prev, y: Math.max(0, preKeyboardY - keyboardHeight) }))
+      } else if (preKeyboardY !== null) {
+        setTypingPos(prev => ({ ...prev, y: preKeyboardY }))
+        preKeyboardY = null
+      }
+    }
+
+    vv.addEventListener('resize', handleVVResize)
+    return () => vv.removeEventListener('resize', handleVVResize)
   }, [])
 
   // Auto-open initial window on load (only for deep-link routes)
@@ -133,6 +178,10 @@ function LandingPage({ initialWindow = null }) {
       computeDockOffset(linksIconRef, linksDockOffset)
       setLinksPos(getOpenPos(linksSize))
       setLinksVisible(true)
+    } else if (initialWindow === 'typing') {
+      computeDockOffset(typingIconRef, typingDockOffset)
+      setTypingPos(getOpenPos(typingSize))
+      setTypingVisible(true)
     }
   }, [])
 
@@ -239,6 +288,24 @@ function LandingPage({ initialWindow = null }) {
     if (linksClosing) { setLinksVisible(false); setLinksClosing(false) }
   }
 
+  // Typing Game handlers
+  const handleTypingOpen = () => {
+    if (dragMoved.current) { dragMoved.current = false; return }
+    if (typingVisible) { bringToFront('typing'); return }
+    computeDockOffset(typingIconRef, typingDockOffset)
+    setTypingPos(getOpenPos(typingSize))
+    setTypingVisible(true)
+    bringToFront('typing')
+  }
+  const handleTypingClose = () => {
+    if (typingClosing) return
+    computeDockOffset(typingIconRef, typingDockOffset, typingPos, typingSize)
+    setTypingClosing(true)
+  }
+  const handleTypingAnimationEnd = () => {
+    if (typingClosing) { setTypingVisible(false); setTypingClosing(false) }
+  }
+
   // Resume handler
   const handleResumeDownload = () => {
     if (dragMoved.current) { dragMoved.current = false; return }
@@ -292,6 +359,18 @@ function LandingPage({ initialWindow = null }) {
           >
             <span className="desktop-icon-emoji">💻</span>
             <span className="desktop-icon-label">Terminal</span>
+          </button>
+
+          <button
+            ref={typingIconRef}
+            className="desktop-icon"
+            style={{ position: 'absolute', left: iconPositions.typing.x, top: iconPositions.typing.y }}
+            onMouseDown={e => handleIconMouseDown(e, 'typing')}
+            onTouchStart={e => handleIconTouchStart(e, 'typing')}
+            onClick={handleTypingOpen}
+          >
+            <span className="desktop-icon-emoji">⌨️</span>
+            <span className="desktop-icon-label">Typing Game</span>
           </button>
 
           <button
@@ -369,6 +448,24 @@ function LandingPage({ initialWindow = null }) {
         scrollable={false}
       >
         <LinksPage />
+      </Window>
+
+      {/* Typing Game window */}
+      <Window
+        title="typing@portfolio ~ "
+        visible={typingVisible}
+        closing={typingClosing}
+        pos={typingPos}
+        size={typingSize}
+        zIndex={zIndexes.typing}
+        dockOffset={typingDockOffset.current}
+        onClose={handleTypingClose}
+        onPosChange={setTypingPos}
+        onInteract={() => bringToFront('typing')}
+        onAnimationEnd={handleTypingAnimationEnd}
+        scrollable={false}
+      >
+        <TypingGame />
       </Window>
     </main>
   )

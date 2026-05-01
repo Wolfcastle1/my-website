@@ -1,0 +1,189 @@
+.typing-game {
+  --color-correct: #89b4fa;
+  --color-error: #f38ba8;
+  --color-untyped: #6c7086;
+  --color-cursor: #cdd6f4;
+
+  --line-font-size: clamp(1rem, 2.5vw, 1.4rem);
+  --line-height: 1.6;
+  --line-gap: 14px;
+  --row-height: calc(var(--line-font-size) * var(--line-height) + var(--line-gap));
+  --easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 3vh, 28px);
+  padding: clamp(12px, 3vh, 32px) clamp(16px, 4vw, 28px);
+  background: #1e1e2e;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  cursor: text;
+  position: relative;
+  overflow: hidden;
+}
+
+.typing-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  caret-color: transparent;
+  width: 100%;
+  height: 100%;
+  cursor: text;
+}
+
+.typing-stage {
+  width: 100%;
+  max-width: 48ch;
+  height: calc(2 * var(--row-height));
+  overflow: hidden;
+  position: relative;
+  font-size: var(--line-font-size);
+}
+
+.typing-shifter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--line-gap);
+  text-align: center;
+  transform: translateY(0);
+  transition: transform var(--transition-duration) var(--easing);
+  will-change: transform;
+}
+
+.typing-shifter.is-shifting {
+  transform: translateY(calc(-1 * var(--row-height)));
+}
+
+.typing-line {
+  font-size: var(--line-font-size);
+  line-height: var(--line-height);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--color-untyped);
+  transition: opacity var(--transition-duration) var(--easing);
+  will-change: opacity;
+}
+
+.typing-line-active {
+  opacity: 1;
+}
+
+.typing-line-active.is-leaving {
+  opacity: 0;
+}
+
+.typing-line-upcoming {
+  opacity: 0.45;
+}
+
+.typing-line-upcoming.is-promoting {
+  opacity: 1;
+}
+
+.typing-line-third {
+  opacity: 0;
+}
+
+.typing-line-third.is-revealing {
+  opacity: 0.45;
+}
+
+.typing-char-untyped {
+  color: var(--color-untyped);
+}
+
+.typing-char-correct {
+  color: var(--color-correct);
+}
+
+.typing-char-incorrect {
+  color: var(--color-error);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.typing-char-cursor {
+  position: relative;
+}
+
+.typing-char-cursor::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--color-cursor);
+  animation: typing-blink 1s step-end infinite;
+}
+
+@keyframes typing-blink {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+.typing-stats {
+  display: flex;
+  gap: 32px;
+  color: var(--color-untyped);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.typing-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.typing-stat-label {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.typing-stat-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 1rem;
+  color: var(--color-cursor);
+  letter-spacing: 0.04em;
+}
+
+.typing-tap-hint {
+  position: absolute;
+  bottom: clamp(12px, 3vh, 24px);
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-untyped);
+  opacity: 0.6;
+  animation: typing-blink 1.2s step-end infinite;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (pointer: coarse) {
+  .typing-stats {
+    gap: clamp(16px, 5vw, 32px);
+    font-size: 0.85rem;
+  }
+
+  .typing-stat-label {
+    font-size: 0.75rem;
+  }
+
+  .typing-input {
+    touch-action: none;
+  }
+}
